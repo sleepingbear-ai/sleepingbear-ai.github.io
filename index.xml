@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>My New Hugo Project</title>
+    <title>Welcome to the Blog of SleepingBear</title>
     <link>https://sleepingbear-ai.github.io/</link>
-    <description>Recent content on My New Hugo Project</description>
+    <description>Recent content on Welcome to the Blog of SleepingBear</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Thu, 21 May 2026 15:18:55 -0700</lastBuildDate>
