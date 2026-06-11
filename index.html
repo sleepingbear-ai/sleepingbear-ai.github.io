@@ -125,6 +125,25 @@
 
 <article class="first-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Anthropic Deep Research: Multi-Agent 架构
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Anthropic 发布了一篇很好的工程博客，讲他们如何用 Multi-Agent 架构来构建 Deep Research 功能。这是一个非常典型的 Multi-Agent 架构， 有很多有价值的创新和实践经验， 值得 AI Engineer 学习。
+原文：How we built our multi-agent research system
+一、为什么要用 Multi-Agent？ Anthropic 给 Deep Research 的定义：开放式（open-ended）的问题，很难提前预测需要哪些步骤。你没法为探索复杂主题写死一条固定路径，因为这个过程本身是动态的、路径依赖（path-dependent）的——随着调查展开，需要灵活地转向或追查旁支线索。
+正因为这种开放性，Multi-Agent 架构很合适，原因：
+并行探索：多个 subagents 同时进行，各自用独立的 context window，探索问题的不同侧面。 关注点分离（separation of concerns）：每个 subagent 有自己独立的工具、prompt 和探索轨迹，这降低了路径依赖，让每条调查更深入、更独立。 突破单 context 上限：研究要处理的信息常常超出 Single-Agent 的 context window，多个 Agent 分摊就能装下更多。 效果有多好？Anthropic 给了一个数字：用 Claude Opus 4 当 lead agent, Claude Sonnet 4 当 subagents 的 Multi-Agent 系统，在内部研究评测上比 Single-Agent （用 Opus 4） 高出 90.2%。
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-10 10:00:00 -0700 PDT'>June 10, 2026</span></footer>
+  <a class="entry-link" aria-label="post link to Anthropic Deep Research: Multi-Agent 架构" href="https://sleepingbear-ai.github.io/posts/anthropic-multi-agent-research/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">Introduction
     </h2>
   </header>

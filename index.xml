@@ -6,8 +6,27 @@
     <description>Recent content on Welcome to the Blog of SleepingBear</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 21 May 2026 15:18:55 -0700</lastBuildDate>
+    <lastBuildDate>Wed, 10 Jun 2026 10:00:00 -0700</lastBuildDate>
     <atom:link href="https://sleepingbear-ai.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Anthropic Deep Research: Multi-Agent 架构</title>
+      <link>https://sleepingbear-ai.github.io/posts/anthropic-multi-agent-research/</link>
+      <pubDate>Wed, 10 Jun 2026 10:00:00 -0700</pubDate>
+      <guid>https://sleepingbear-ai.github.io/posts/anthropic-multi-agent-research/</guid>
+      <description>&lt;p&gt;Anthropic 发布了一篇很好的工程博客，讲他们如何用 Multi-Agent 架构来构建 Deep Research 功能。这是一个非常典型的 Multi-Agent 架构， 有很多有价值的创新和实践经验， 值得 AI Engineer 学习。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;原文：&lt;a href=&#34;https://www.anthropic.com/engineering/multi-agent-research-system&#34;&gt;How we built our multi-agent research system&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;一为什么要用-multi-agent&#34;&gt;一、为什么要用 Multi-Agent？&lt;/h2&gt;
+&lt;p&gt;Anthropic 给 Deep Research 的定义：&lt;strong&gt;开放式（open-ended）的问题，很难提前预测需要哪些步骤&lt;/strong&gt;。你没法为探索复杂主题写死一条固定路径，因为这个过程本身是动态的、路径依赖（path-dependent）的——随着调查展开，需要灵活地转向或追查旁支线索。&lt;/p&gt;
+&lt;p&gt;正因为这种开放性，Multi-Agent 架构很合适，原因：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;并行探索&lt;/strong&gt;：多个 subagents 同时进行，各自用&lt;strong&gt;独立的 context window&lt;/strong&gt;，探索问题的不同侧面。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;关注点分离（separation of concerns）&lt;/strong&gt;：每个 subagent 有自己独立的工具、prompt 和探索轨迹，这降低了路径依赖，让每条调查更深入、更独立。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;突破单 context 上限&lt;/strong&gt;：研究要处理的信息常常超出 Single-Agent 的 context window，多个 Agent 分摊就能装下更多。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;效果有多好？Anthropic 给了一个数字：用 Claude Opus 4 当 lead agent, Claude Sonnet 4 当 subagents 的 Multi-Agent 系统，在内部研究评测上比 Single-Agent （用 Opus 4） &lt;strong&gt;高出 90.2%&lt;/strong&gt;。&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Introduction</title>
       <link>https://sleepingbear-ai.github.io/posts/firstpost/</link>
