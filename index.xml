@@ -36,7 +36,8 @@
     D -- &amp;#34;纯文本答案&amp;#34; --&amp;gt; O[&amp;#34;格式化输出&amp;lt;br/&amp;gt;Answer + 引用 + 结果列表&amp;#34;]
     O --&amp;gt; R([&amp;#34;返回最终答案&amp;#34;])
 &lt;/pre&gt;
-&lt;p&gt;几个关键点：&lt;/p&gt;</description>
+&lt;h2 id=&#34;二完整代码&#34;&gt;二、完整代码&lt;/h2&gt;
+&lt;p&gt;整个程序就一个 Python 文件，约 120 行：&lt;/p&gt;</description>
     </item>
     <item>
       <title>Anthropic Deep Research: Multi-Agent 架构</title>
