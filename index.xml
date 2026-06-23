@@ -13,7 +13,7 @@
       <link>https://sleepingbear-ai.github.io/posts/agentic-search-demo/</link>
       <pubDate>Mon, 22 Jun 2026 10:00:00 -0700</pubDate>
       <guid>https://sleepingbear-ai.github.io/posts/agentic-search-demo/</guid>
-      <description>&lt;p&gt;传统的基于RAG的 AI Search里，LLM 只负责把RAG 搜索的结果整合成最终答案， LLM 不参与&amp;quot;该怎么搜&amp;quot;。&lt;/p&gt;
+      <description>&lt;p&gt;传统的基于 RAG 的 AI Search 里，LLM 只负责把 RAG 搜索的结果整合成最终答案，LLM 不参与&amp;quot;该怎么搜&amp;quot;。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Agentic AI Search&lt;/strong&gt; 把 LLM 变成主动的 &lt;strong&gt;Orchestrator&lt;/strong&gt;（指挥者）。它自己决定：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;搜&lt;strong&gt;什么&lt;/strong&gt; query&lt;/li&gt;
