@@ -6,8 +6,38 @@
     <description>Recent content on Welcome to the Blog of SleepingBear</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 10 Jun 2026 10:00:00 -0700</lastBuildDate>
+    <lastBuildDate>Mon, 22 Jun 2026 10:00:00 -0700</lastBuildDate>
     <atom:link href="https://sleepingbear-ai.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Agentic Search 原理和代码: 极简演示</title>
+      <link>https://sleepingbear-ai.github.io/posts/agentic-search-demo/</link>
+      <pubDate>Mon, 22 Jun 2026 10:00:00 -0700</pubDate>
+      <guid>https://sleepingbear-ai.github.io/posts/agentic-search-demo/</guid>
+      <description>&lt;p&gt;传统的 RAG 搜索里，LLM 是个&lt;strong&gt;被动的读者&lt;/strong&gt;：先固定搜一次，把结果一股脑喂给 LLM，让它合成一个答案。LLM 不参与&amp;quot;该怎么搜&amp;quot;。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Agentic Search&lt;/strong&gt; 把 LLM 变成主动的 &lt;strong&gt;Orchestrator&lt;/strong&gt;（指挥者）。它自己决定：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;搜&lt;strong&gt;什么&lt;/strong&gt; query&lt;/li&gt;
+&lt;li&gt;要不要&lt;strong&gt;再搜&lt;/strong&gt;一次（换个 query）&lt;/li&gt;
+&lt;li&gt;什么时候信息&lt;strong&gt;够了&lt;/strong&gt;，可以直接作答&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;举两个直观例子：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;问 &amp;ldquo;1 + 2&amp;rdquo; —— LLM 直接回答 &amp;ldquo;3&amp;rdquo;，根本不触发搜索。&lt;/li&gt;
+&lt;li&gt;问 &amp;ldquo;Claude Code 是怎么实现的？&amp;rdquo; —— LLM 自己发起了两次不同 query 的搜索，攒够信息后才作答。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这就是从 RAG 到 &lt;strong&gt;Agentic Search&lt;/strong&gt; 的转变，也是现代 AI 聊天与搜索引擎背后的核心范式。下面用 ~120 行 Python 把它从零讲清楚。&lt;/p&gt;
+&lt;h2 id=&#34;一原理agent-loop--tool-use&#34;&gt;一、原理：Agent Loop + Tool Use&lt;/h2&gt;
+&lt;p&gt;整个机制就是一个循环：给 LLM 一个 &lt;code&gt;web_search&lt;/code&gt; 工具，让它在循环里自己决定&lt;strong&gt;搜&lt;/strong&gt;还是&lt;strong&gt;答&lt;/strong&gt;。&lt;/p&gt;
+&lt;pre class=&#34;mermaid&#34;&gt;flowchart TD
+    Q([&amp;#34;用户 Query&amp;#34;]) --&amp;gt; L[&amp;#34;调用 LLM&amp;lt;br/&amp;gt;（带 web_search 工具）&amp;#34;]
+    L --&amp;gt; D{&amp;#34;LLM 返回的是&amp;lt;br/&amp;gt;Tool Use 还是答案？&amp;#34;}
+    D -- &amp;#34;Tool Use: web_search(query)&amp;#34; --&amp;gt; S[&amp;#34;执行搜索&amp;lt;br/&amp;gt;结果去重后加入 Context&amp;#34;]
+    S --&amp;gt; L
+    D -- &amp;#34;纯文本答案&amp;#34; --&amp;gt; O[&amp;#34;格式化输出&amp;lt;br/&amp;gt;Answer + 引用 + 结果列表&amp;#34;]
+    O --&amp;gt; R([&amp;#34;返回最终答案&amp;#34;])
+&lt;/pre&gt;
+&lt;p&gt;几个关键点：&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Anthropic Deep Research: Multi-Agent 架构</title>
       <link>https://sleepingbear-ai.github.io/posts/anthropic-multi-agent-research/</link>

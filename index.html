@@ -125,6 +125,26 @@
 
 <article class="first-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Agentic Search 原理和代码: 极简演示
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>传统的 RAG 搜索里，LLM 是个被动的读者：先固定搜一次，把结果一股脑喂给 LLM，让它合成一个答案。LLM 不参与&#34;该怎么搜&#34;。
+Agentic Search 把 LLM 变成主动的 Orchestrator（指挥者）。它自己决定：
+搜什么 query 要不要再搜一次（换个 query） 什么时候信息够了，可以直接作答 举两个直观例子：
+问 “1 &#43; 2” —— LLM 直接回答 “3”，根本不触发搜索。 问 “Claude Code 是怎么实现的？” —— LLM 自己发起了两次不同 query 的搜索，攒够信息后才作答。 这就是从 RAG 到 Agentic Search 的转变，也是现代 AI 聊天与搜索引擎背后的核心范式。下面用 ~120 行 Python 把它从零讲清楚。
+一、原理：Agent Loop &#43; Tool Use 整个机制就是一个循环：给 LLM 一个 web_search 工具，让它在循环里自己决定搜还是答。
+flowchart TD Q([&#34;用户 Query&#34;]) --&gt; L[&#34;调用 LLM&lt;br/&gt;（带 web_search 工具）&#34;] L --&gt; D{&#34;LLM 返回的是&lt;br/&gt;Tool Use 还是答案？&#34;} D -- &#34;Tool Use: web_search(query)&#34; --&gt; S[&#34;执行搜索&lt;br/&gt;结果去重后加入 Context&#34;] S --&gt; L D -- &#34;纯文本答案&#34; --&gt; O[&#34;格式化输出&lt;br/&gt;Answer &#43; 引用 &#43; 结果列表&#34;] O --&gt; R([&#34;返回最终答案&#34;]) 几个关键点：
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-22 10:00:00 -0700 PDT'>June 22, 2026</span></footer>
+  <a class="entry-link" aria-label="post link to Agentic Search 原理和代码: 极简演示" href="https://sleepingbear-ai.github.io/posts/agentic-search-demo/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">Anthropic Deep Research: Multi-Agent 架构
     </h2>
   </header>
