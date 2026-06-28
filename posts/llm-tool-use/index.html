@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html lang="en" dir="auto" data-theme="auto">
 
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="index, follow">
 <title>LLM 是怎么学会 Tool Use 的？ | Welcome to the Blog of SleepingBear</title>
 <meta name="keywords" content="">
 <meta name="description" content="AI Agent 的强大，来自 LLM 看似神奇的调用 Tools 的能力。这份高层次的拆解，帮你看清魔法背后的原理。">
 <meta name="author" content="">
-<link rel="canonical" href="http://localhost:1313/posts/llm-tool-use/">
+<link rel="canonical" href="https://sleepingbear-ai.github.io/posts/llm-tool-use/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.cd9298b33628769aa1bc1acebbbfd7aa11ce81dfe03484d479e1907760249a1d.css" integrity="sha256-zZKYszYodpqhvBrOu7/XqhHOgd/gNITUeeGQd2Akmh0=" rel="preload stylesheet" as="style">
-<link rel="icon" href="http://localhost:1313/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
-<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
-<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<link rel="icon" href="https://sleepingbear-ai.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://sleepingbear-ai.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://sleepingbear-ai.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://sleepingbear-ai.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://sleepingbear-ai.github.io/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/llm-tool-use/">
+<link rel="alternate" hreflang="en" href="https://sleepingbear-ai.github.io/posts/llm-tool-use/">
 <noscript>
     <style>
         #theme-toggle,
@@ -64,13 +64,76 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
+</script><meta property="og:url" content="https://sleepingbear-ai.github.io/posts/llm-tool-use/">
+  <meta property="og:site_name" content="Welcome to the Blog of SleepingBear">
+  <meta property="og:title" content="LLM 是怎么学会 Tool Use 的？">
+  <meta property="og:description" content="AI Agent 的强大，来自 LLM 看似神奇的调用 Tools 的能力。这份高层次的拆解，帮你看清魔法背后的原理。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-06-27T10:00:00-07:00">
+    <meta property="article:modified_time" content="2026-06-27T10:00:00-07:00">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="LLM 是怎么学会 Tool Use 的？">
+  <meta name="twitter:description" content="AI Agent 的强大，来自 LLM 看似神奇的调用 Tools 的能力。这份高层次的拆解，帮你看清魔法背后的原理。">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://sleepingbear-ai.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "LLM 是怎么学会 Tool Use 的？",
+      "item": "https://sleepingbear-ai.github.io/posts/llm-tool-use/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "LLM 是怎么学会 Tool Use 的？",
+  "name": "LLM 是怎么学会 Tool Use 的？",
+  "description": "AI Agent 的强大，来自 LLM 看似神奇的调用 Tools 的能力。这份高层次的拆解，帮你看清魔法背后的原理。",
+  "keywords": [
+    
+  ],
+  "articleBody": "AI Agent 的强大，来自 LLM 看似神奇的调用 Tools 的能力。这份魔法到底从哪来？下面做个高层次的拆解，把它讲清楚。\nTL;DR 一个常见的误解是：LLM 用工具时，是它自己直接连网、跑代码、或启动某个程序。实际上，LLM 从来不会真的执行工具，它依然只是一个文本预测器。\n另一个误解是：只要在 Prompt 里要求一下，任何 LLM 都能可靠地吐出格式正确的 Tool Call（JSON）。强一点的模型确实可以靠 Prompt 被\"哄\"出来，但要做到可靠——选对工具、传对参数、格式合法、时机正确——就得靠专门的训练。正是这种训练，把 Tool Use 从一个脆弱的 Prompt 技巧，变成了原生、可依赖的能力。\n所谓 “Tool Use”（也叫 Function Calling），其实是三个部分精心编排的配合：\n结构化的 Prompt —— AI Agent（比如一个聊天机器人，或 Claude Code）在 System Prompt 里，把可用工具列表（以 JSON Schema 的形式）交给 LLM。 专门的训练 —— LLM 被 fine-tune 过，当它识别到需要时，会发出一个结构化的 Tool Call 请求，而不是用自然语言作答。 外部的 Runtime —— AI Agent 盯着模型的输出，替它执行工具的函数调用，再把结果喂回到对话里。 模型决定调用什么、用什么参数。真正的调用，由 AI Agent 这层外部软件来做。\n把这几部分拼起来，就构成了 Agent Loop：\n用户 Query + 工具列表 │ ▼ ┌──────────┐ 发出 Tool Call ┌──────────────────┐ ┌─────►│ LLM │ ──────────────────► │ AI Agent 执行 │ ──► 🌐 / 💻 / 🗄 │ └──────────┘ │ 工具 │ │ │ └──────────────────┘ │ │ 不再需要工具 │ │ ▼ │ tool_result │ 最终答案 ──► 用户 │ │ │ └─────────────────────────────────────────────────┘ 循环，直到 LLM 不再调用工具 原理拆解 端到端地看，一次完整的 Tool Use 是这样的：\n┌──────────────────────────── 对话历史 ────────────────────────────┐ SYSTEM │ \"你有这些工具： │ PROMPT │ get_current_weather(location: str, unit: 'celsius'|'fahrenheit')│ │ → 获取某个城市的当前天气数据\" │ └──────────────────────────────────────────────────────────────────┘ USER ──► \"巴黎现在天气怎么样？\" │ ▼ ┌───────────┐ (1) 意识到静态知识答不了；把请求匹配到 │ LLM │ 天气工具的描述，于是不写自然语言，而是发出： └───────────┘ │ ▼ (2) 结构化的 Tool Call 请求 { \"name\": \"get_current_weather\", \"arguments\": { \"location\": \"Paris\", \"unit\": \"celsius\" } } │ ▼ (3) AI AGENT 看到这个调用， ┌───────────┐ 向天气服务发起真正的 API 调用…… │ AI AGENT │ ───► 🌐 天气 API ───► { \"temp_c\": 22, \"sky\": \"sunny\" } └───────────┘ ……再把结果以 `tool_result` 消息喂回去 │ ▼ (4) 模型读到新数据，写出自然语言 ┌───────────┐ │ LLM │ ───► \"巴黎现在 22°C，晴天！\" └───────────┘ 1. 蓝图（System Prompt） 在你输入任何内容之前，AI Agent 已经注入了一段隐藏的 System Prompt，里面列着可用的工具。每个工具都配有严格的蓝图——通常是 JSON Schema——讲清楚：\n这个工具做什么： 比如 \"获取某个城市的当前天气数据\"。 需要哪些输入： 比如一个 location 字符串，和一个可选的 unit 枚举（celsius / fahrenheit）。 因为模型对语义高度敏感，它读了这些描述，就能在概念上理解每个工具是干嘛的。\n具体到 OpenAI API，你在请求的 tools 参数里传入工具蓝图：\nfrom openai import OpenAI client = OpenAI() tools = [{ \"type\": \"function\", \"function\": { \"name\": \"get_current_weather\", \"description\": \"Get current weather data for a city\", \"parameters\": { \"type\": \"object\", \"properties\": { \"location\": {\"type\": \"string\", \"description\": \"City name, e.g. 'Paris'\"}, \"unit\": {\"type\": \"string\", \"enum\": [\"celsius\", \"fahrenheit\"]}, }, \"required\": [\"location\"], }, }, }] response = client.chat.completions.create( model=\"gpt-4o\", messages=[{\"role\": \"user\", \"content\": \"What's the weather like in Paris right now?\"}], tools=tools, ) # 模型不会用自然语言回答 —— 它返回一个要执行的 Tool Call： call = response.choices[0].message.tool_calls[0] print(call.function.name) # \"get_current_weather\" print(call.function.arguments) # '{\"location\": \"Paris\", \"unit\": \"celsius\"}' 2. 触发（识别到需要） 当你问巴黎天气时，模型意识到自己的静态训练数据答不了，把你的请求和工具描述做匹配，然后决定行动。它输出一个 Tool Use 请求（常常包在 之类的特殊语法里，或就是裸 JSON），声明它的意图：\n{ \"name\": \"get_current_weather\", \"arguments\": { \"location\": \"Paris\", \"unit\": \"celsius\" } } 3. 交接（外部环境） 运行模型的那段代码——也就是 AI Agent——一直盯着输出流。一旦看到 LLM 吐出的那段 Tool Call JSON，它就拿着生成的参数（\"Paris\"、\"celsius\"），向天气服务发起真正的 API 调用，取回实时数据，再以一条标着 tool_result 的新消息塞回对话历史。\n整个把戏的关键就在这里：模型自始至终只产出了一段描述函数调用的文本，真正去调用的，是 AI Agent 里的软件。\n4. 作答（综合出答案） 工具运行结果现在已经在它的 Context 里，LLM 据此生成回复：“巴黎现在 22°C，晴天！”\nLLM 是怎么学会这个行为的？ LLM 不是天生就会写 JSON Tool Call 请求的，这是训练出来的：\nSupervised Fine-Tuning（SFT）： 用成千上万条模拟对话来训练模型，形态是 [用户提问] → [模型发出 JSON Tool Call] → [系统插入工具结果] → [模型给出最终答案]。它学会复现这个模式。 Reinforcement Learning（RLHF / DPO）： 模型因生成不会让 Runtime 崩溃的合法参数而被奖励，因幻觉出输入、或选错工具而被惩罚。 各大实验室实际怎么训练 OpenAI 原生的 “Function Calling” 在 2023 年 6 月（gpt-3.5-turbo-0613）上线。他们用这样的数据做 fine-tune：System Prompt 里含 API Schema，目标输出是字符串化的 JSON。更晚的模型（GPT-4o）则针对 parallel function calling（并行函数调用）做了调优。\nAnthropic Claude 被训练成把工具描述当作hard constraints，用 RLHF 和 DPO 来惩罚幻觉的、错误或缺失的参数。\nGoogle Gemini 的技术报告提到，Tool Use 不仅仅是在 post-training 阶段才进行的：结构化的 API 交互、数据库查询、多轮编程日志，是和普通文本一起混进 pre-training 的。自动化的校验循环，会惩罚任何过不了 JSON 校验器或编译器的工具参数。\n研究与工程版图 Tool Use 从一个新颖的点子，演变成了标准的 AI 工程基础设施。几个里程碑：\n奠基性研究\nToolformer（Schick et al., 2023）—— 开创性地证明了模型可以通过自监督自学：什么时候该发 API 调用、传什么参数、以及如何把结果折回到 next-token 预测里，同时不丢失它的文本生成能力。 Gorilla（Patil et al., 2023）—— 把这个想法从少数几个工具（计算器、日历）扩展到成千上万个复杂、不断变化的 Web API，靠 instruction tuning 加一个 retriever 来缓解 API 文档幻觉。 工程标准\n从研究走向生产，暴露出严重的碎片化：每个厂商都想要一套不同的 Schema，每个数据源都要写一坨专门的胶水代码。行业的答案是统一的协议层——其中最有名的就是 Anthropic 的 Model Context Protocol（MCP）。MCP 标准化了 AI Agent 与 “MCP Server”（工具或数据源的封装）之间的对话方式。工程师部署模块化的 MCP Server，LLM 则从这些 MCP Server 里动态发现可用的工具和数据源。\n参考文献 Schick, T., et al. (2023). Toolformer: Language Models Can Teach Themselves to Use Tools. arXiv:2302.04761 Patil, S. G., et al. (2023). Gorilla: Large Language Model Connected with Massive APIs. arXiv:2305.15334 Hou, X., Zhao, Y., Wang, S., \u0026 Wang, H. (2025). Model Context Protocol (MCP): Landscape, Security Threats, and Future Research Directions. arXiv:2503.23278 #ai #aiagents #llm #tooluse #functioncalling #mcp #人工智能 #ai学习 #大模型\nIf you like this post, consider star the repo.\n",
+  "wordCount" : "560",
+  "inLanguage": "en",
+  "datePublished": "2026-06-27T10:00:00-07:00",
+  "dateModified": "2026-06-27T10:00:00-07:00",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sleepingbear-ai.github.io/posts/llm-tool-use/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Welcome to the Blog of SleepingBear",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://sleepingbear-ai.github.io/favicon.ico"
+    }
+  }
+}
 </script>
 </head>
 <body id="top">
     <header class="header">
     <nav class="header-nav">
         <div class="logo">
-            <a href="http://localhost:1313/" accesskey="h" title="Welcome to the Blog of SleepingBear (Alt + H)">Welcome to the Blog of SleepingBear</a>
+            <a href="https://sleepingbear-ai.github.io/" accesskey="h" title="Welcome to the Blog of SleepingBear (Alt + H)">Welcome to the Blog of SleepingBear</a>
             <div class="logo-switches">
                 <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
                     <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
@@ -223,9 +286,9 @@
 <h4 id="openai">OpenAI<a hidden class="anchor" aria-hidden="true" href="#openai">#</a></h4>
 <p>原生的 &ldquo;Function Calling&rdquo; 在 2023 年 6 月（<code>gpt-3.5-turbo-0613</code>）上线。他们用这样的数据做 fine-tune：System Prompt 里含 API Schema，目标输出是字符串化的 JSON。更晚的模型（GPT-4o）则针对 <strong>parallel function calling</strong>（并行函数调用）做了调优。</p>
 <h4 id="anthropic">Anthropic<a hidden class="anchor" aria-hidden="true" href="#anthropic">#</a></h4>
-<p>Claude 被训练成把工具描述当作<strong>硬约束</strong>，用 RLHF 和 DPO 来惩罚幻觉的、或未列出的参数。更近期的 <strong>programmatic tool calling</strong>，训练模型直接吐出<em>编排代码</em>（Python 循环），在沙箱里运行——处理成千上万 token 的中间数据，只把压缩后的最终答案返回主 Context。</p>
+<p>Claude 被训练成把工具描述当作<strong>hard constraints</strong>，用 RLHF 和 DPO 来惩罚幻觉的、错误或缺失的参数。</p>
 <h4 id="google">Google<a hidden class="anchor" aria-hidden="true" href="#google">#</a></h4>
-<p>Gemini 的技术报告提到，Tool Use 不是在 post-training 阶段才&quot;装&quot;上去的——结构化的 API 交互、数据库查询、多轮编程日志，是和普通文本一起混进 <strong>pre-training</strong> 的。自动化的校验循环，会惩罚任何过不了 JSON 校验器或编译器的工具参数。</p>
+<p>Gemini 的技术报告提到，Tool Use 不仅仅是在 post-training 阶段才进行的：结构化的 API 交互、数据库查询、多轮编程日志，是和普通文本一起混进 <strong>pre-training</strong> 的。自动化的校验循环，会惩罚任何过不了 JSON 校验器或编译器的工具参数。</p>
 <h2 id="研究与工程版图">研究与工程版图<a hidden class="anchor" aria-hidden="true" href="#研究与工程版图">#</a></h2>
 <p>Tool Use 从一个新颖的点子，演变成了标准的 AI 工程基础设施。几个里程碑：</p>
 <p><strong>奠基性研究</strong></p>
@@ -257,7 +320,7 @@
     </main>
     
 <footer class="footer">
-        <span>&copy; 2026 <a href="http://localhost:1313/">Welcome to the Blog of SleepingBear</a></span> · 
+        <span>&copy; 2026 <a href="https://sleepingbear-ai.github.io/">Welcome to the Blog of SleepingBear</a></span> · 
 
     
     
