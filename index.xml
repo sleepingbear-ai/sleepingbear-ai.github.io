@@ -6,8 +6,15 @@
     <description>Recent content on Welcome to the Blog of SleepingBear</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 22 Jun 2026 10:00:00 -0700</lastBuildDate>
+    <lastBuildDate>Sat, 27 Jun 2026 10:00:00 -0700</lastBuildDate>
     <atom:link href="https://sleepingbear-ai.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>LLM 是怎么学会 Tool Use 的？</title>
+      <link>https://sleepingbear-ai.github.io/posts/llm-tool-use/</link>
+      <pubDate>Sat, 27 Jun 2026 10:00:00 -0700</pubDate>
+      <guid>https://sleepingbear-ai.github.io/posts/llm-tool-use/</guid>
+      <description>&lt;em&gt;AI Agent 的强大，来自 LLM 看似神奇的调用 &lt;strong&gt;Tools&lt;/strong&gt; 的能力。这份高层次的拆解，帮你看清魔法背后的原理。&lt;/em&gt;</description>
+    </item>
     <item>
       <title>Agentic AI Search: 原理和代码</title>
       <link>https://sleepingbear-ai.github.io/posts/agentic-search-demo/</link>
