@@ -2,24 +2,31 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Welcome to the Blog of SleepingBear</title>
-    <link>https://sleepingbear-ai.github.io/</link>
+    <link>http://localhost:1313/</link>
     <description>Recent content on Welcome to the Blog of SleepingBear</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 27 Jun 2026 10:00:00 -0700</lastBuildDate>
-    <atom:link href="https://sleepingbear-ai.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 09 Jul 2026 10:00:00 -0700</lastBuildDate>
+    <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>TIGER（生成式推荐的经典论文）: 解释和思考</title>
+      <link>http://localhost:1313/posts/tiger-generative-retrieval/</link>
+      <pubDate>Thu, 09 Jul 2026 10:00:00 -0700</pubDate>
+      <guid>http://localhost:1313/posts/tiger-generative-retrieval/</guid>
+      <description>&lt;em&gt;用 RQ-VAE 给每个 item 生成 Semantic ID，再用自回归解码用户的 Semantic ID 序列来做召回。&lt;/em&gt;</description>
+    </item>
     <item>
       <title>LLM 是怎么学会 Tool Use 的？</title>
-      <link>https://sleepingbear-ai.github.io/posts/llm-tool-use/</link>
+      <link>http://localhost:1313/posts/llm-tool-use/</link>
       <pubDate>Sat, 27 Jun 2026 10:00:00 -0700</pubDate>
-      <guid>https://sleepingbear-ai.github.io/posts/llm-tool-use/</guid>
+      <guid>http://localhost:1313/posts/llm-tool-use/</guid>
       <description>&lt;em&gt;AI Agent 的强大，来自 LLM 看似神奇的调用 &lt;strong&gt;Tools&lt;/strong&gt; 的能力。这份高层次的拆解，帮你看清魔法背后的原理。&lt;/em&gt;</description>
     </item>
     <item>
       <title>Agentic AI Search: 原理和代码</title>
-      <link>https://sleepingbear-ai.github.io/posts/agentic-search-demo/</link>
+      <link>http://localhost:1313/posts/agentic-search-demo/</link>
       <pubDate>Mon, 22 Jun 2026 10:00:00 -0700</pubDate>
-      <guid>https://sleepingbear-ai.github.io/posts/agentic-search-demo/</guid>
+      <guid>http://localhost:1313/posts/agentic-search-demo/</guid>
       <description>&lt;p&gt;传统的基于 RAG 的 AI Search 里，LLM 只负责把 RAG 搜索的结果整合成最终答案，LLM 不参与&amp;quot;该怎么搜&amp;quot;。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Agentic AI Search&lt;/strong&gt; 把 LLM 变成主动的 &lt;strong&gt;Orchestrator&lt;/strong&gt;（指挥者）。它自己决定：&lt;/p&gt;
 &lt;ul&gt;
@@ -48,9 +55,9 @@
     </item>
     <item>
       <title>Anthropic Deep Research: Multi-Agent 架构</title>
-      <link>https://sleepingbear-ai.github.io/posts/anthropic-multi-agent-research/</link>
+      <link>http://localhost:1313/posts/anthropic-multi-agent-research/</link>
       <pubDate>Wed, 10 Jun 2026 10:00:00 -0700</pubDate>
-      <guid>https://sleepingbear-ai.github.io/posts/anthropic-multi-agent-research/</guid>
+      <guid>http://localhost:1313/posts/anthropic-multi-agent-research/</guid>
       <description>&lt;p&gt;Anthropic 发布了一篇很好的工程博客，讲他们如何用 Multi-Agent 架构来构建 Deep Research 功能。这是一个非常典型的 Multi-Agent 架构， 有很多有价值的创新和实践经验， 值得 AI Engineer 学习。&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;原文：&lt;a href=&#34;https://www.anthropic.com/engineering/multi-agent-research-system&#34;&gt;How we built our multi-agent research system&lt;/a&gt;&lt;/p&gt;
@@ -67,9 +74,9 @@
     </item>
     <item>
       <title>Introduction</title>
-      <link>https://sleepingbear-ai.github.io/posts/firstpost/</link>
+      <link>http://localhost:1313/posts/firstpost/</link>
       <pubDate>Thu, 21 May 2026 15:18:55 -0700</pubDate>
-      <guid>https://sleepingbear-ai.github.io/posts/firstpost/</guid>
+      <guid>http://localhost:1313/posts/firstpost/</guid>
       <description>&lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;
 &lt;p&gt;This is a blog in English and Chinese, about AI, Reading, and Thoughts on many things.&lt;/p&gt;
 &lt;p&gt;这是一个中英文博客， 关于： 人工智能， 阅读, 和诸般思考。&lt;/p&gt;</description>

@@ -6,8 +6,15 @@
     <description>Recent content in Posts on Welcome to the Blog of SleepingBear</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 27 Jun 2026 10:00:00 -0700</lastBuildDate>
+    <lastBuildDate>Thu, 09 Jul 2026 10:00:00 -0700</lastBuildDate>
     <atom:link href="https://sleepingbear-ai.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>TIGER（生成式推荐的经典论文）: 解释和思考</title>
+      <link>https://sleepingbear-ai.github.io/posts/tiger-generative-retrieval/</link>
+      <pubDate>Thu, 09 Jul 2026 10:00:00 -0700</pubDate>
+      <guid>https://sleepingbear-ai.github.io/posts/tiger-generative-retrieval/</guid>
+      <description>&lt;em&gt;用 RQ-VAE 给每个 item 生成 Semantic ID，再用自回归解码用户的 Semantic ID 序列来做召回。&lt;/em&gt;</description>
+    </item>
     <item>
       <title>LLM 是怎么学会 Tool Use 的？</title>
       <link>https://sleepingbear-ai.github.io/posts/llm-tool-use/</link>
