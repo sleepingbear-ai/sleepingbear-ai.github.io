@@ -6,8 +6,30 @@
     <description>Recent content on Welcome to the Blog of SleepingBear</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 09 Jul 2026 10:00:00 -0700</lastBuildDate>
+    <lastBuildDate>Mon, 20 Jul 2026 10:00:00 -0700</lastBuildDate>
     <atom:link href="https://sleepingbear-ai.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Multi-Agent Deep Research: 原理和代码</title>
+      <link>https://sleepingbear-ai.github.io/posts/multi-agent-deep-research/</link>
+      <pubDate>Mon, 20 Jul 2026 10:00:00 -0700</pubDate>
+      <guid>https://sleepingbear-ai.github.io/posts/multi-agent-deep-research/</guid>
+      <description>&lt;p&gt;之前写过一篇 &lt;a href=&#34;https://sleepingbear-ai.github.io/posts/anthropic-multi-agent-research/&#34;&gt;Anthropic Deep Research: Multi-Agent 架构&lt;/a&gt;，讲 Anthropic 是怎么用 Multi-Agent 做 Deep Research 的。我按照那套架构用&lt;strong&gt;139 行 Python&lt;/strong&gt; 实现了一个能并行搜索、带引用的 Deep Research。&lt;/p&gt;
+&lt;h2 id=&#34;原理orchestrator-worker&#34;&gt;原理：Orchestrator-Worker&lt;/h2&gt;
+&lt;p&gt;Anthropic 的核心思路是 &lt;strong&gt;Orchestrator-Worker&lt;/strong&gt;（指挥者—工人）：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Lead Agent（指挥者）&lt;/strong&gt; —— 拆解问题，把一个大 query 切成几个互不重叠的子任务。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Subagents（工人）&lt;/strong&gt; —— 每人领一个子任务，&lt;strong&gt;并行&lt;/strong&gt;去搜索，各自有独立的 context window，完成任务后只把&lt;strong&gt;压缩过的 findings&lt;/strong&gt; 返回给 Lead Agent。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Synthesis&lt;/strong&gt; —— Lead Agent 把各路 findings 汇总成一篇连贯的报告。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Citation&lt;/strong&gt; —— 最后统一给报告里的每个论断挂上来源链接。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;为什么要多个 Agent？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;并行探索&lt;/strong&gt;：多个 Subagent 同时进行，各自用独立的 context window，探索问题的不同侧面。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;关注点分离（separation of concerns）&lt;/strong&gt;：每个 Subagent 有自己独立的工具、prompt 和 Agentic Loop，这降低了路径依赖，让每条调查更深入、更独立。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;突破单 context 上限&lt;/strong&gt;：Deep Research 要处理的信息常常超出 Single-Agent 的 context window，多个 Agent 分摊是必要的。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Multi-Agent 有效，主要是因为它能 &lt;strong&gt;&amp;ldquo;花掉足够多的 token 来解决问题&amp;rdquo;&lt;/strong&gt;。Anthropic 用 Claude Opus 4 为 Lead Agent、Claude Sonnet 4 为 Subagent 的系统，在内部研究评测上比 Single-Agent（用 Opus 4）效果高出 90.2%——代价是 token 消耗大得多，所以这套架构只适合&lt;strong&gt;高价值、可并行、超出单 context&lt;/strong&gt; 的任务。&lt;/p&gt;</description>
+    </item>
     <item>
       <title>TIGER（生成式推荐的经典论文）: 解释和思考</title>
       <link>https://sleepingbear-ai.github.io/posts/tiger-generative-retrieval/</link>
