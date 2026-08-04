@@ -1,26 +1,19 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>Semanticid on Welcome to the Blog of SleepingBear</title>
-    <link>https://sleepingbear-ai.github.io/tags/semanticid/</link>
-    <description>Recent content in Semanticid on Welcome to the Blog of SleepingBear</description>
+    <title>Plum on Welcome to the Blog of SleepingBear</title>
+    <link>https://sleepingbear-ai.github.io/tags/plum/</link>
+    <description>Recent content in Plum on Welcome to the Blog of SleepingBear</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Tue, 04 Aug 2026 10:00:00 -0700</lastBuildDate>
-    <atom:link href="https://sleepingbear-ai.github.io/tags/semanticid/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://sleepingbear-ai.github.io/tags/plum/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>YouTube PLUM 解释和思考：把 Gemini LLM 改造成工业级生成式召回模型</title>
       <link>https://sleepingbear-ai.github.io/posts/plum/</link>
       <pubDate>Tue, 04 Aug 2026 10:00:00 -0700</pubDate>
       <guid>https://sleepingbear-ai.github.io/posts/plum/</guid>
       <description>&lt;em&gt;PLUM（Google DeepMind &amp;amp; YouTube）把一个预训练好的 Gemini LLM 改造成了线上推荐模型：先把每个视频 tokenize 成 Semantic ID，把这些 ID 加进 LLM 的词表，继续预训练让 LLM 学会&amp;quot;视频&amp;quot;这个新 modality，最后 fine-tune 它直接生成下一个视频的 ID。&lt;/em&gt;</description>
-    </item>
-    <item>
-      <title>OneRec（快手）解释和思考：一个生成式推荐模型统一召回与排序</title>
-      <link>https://sleepingbear-ai.github.io/posts/onerec/</link>
-      <pubDate>Wed, 29 Jul 2026 10:00:00 -0700</pubDate>
-      <guid>https://sleepingbear-ai.github.io/posts/onerec/</guid>
-      <description>&lt;em&gt;一个生成式推荐模型，代替整套&amp;quot;召回→排序&amp;quot;流程；一次生成一整个 session；再用 Reward Model 驱动的 Self-Improving DPO 循环做 Preference Alignment。&lt;/em&gt;</description>
     </item>
   </channel>
 </rss>
