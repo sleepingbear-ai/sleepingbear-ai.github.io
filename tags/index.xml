@@ -6,34 +6,90 @@
     <description>Recent content in Tags on Welcome to the Blog of SleepingBear</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 04 Aug 2026 10:00:00 -0700</lastBuildDate>
+    <lastBuildDate>Fri, 14 Aug 2026 10:00:00 -0700</lastBuildDate>
     <atom:link href="https://sleepingbear-ai.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Ai</title>
       <link>https://sleepingbear-ai.github.io/tags/ai/</link>
-      <pubDate>Tue, 04 Aug 2026 10:00:00 -0700</pubDate>
+      <pubDate>Fri, 14 Aug 2026 10:00:00 -0700</pubDate>
       <guid>https://sleepingbear-ai.github.io/tags/ai/</guid>
       <description></description>
     </item>
     <item>
       <title>Ai学习</title>
       <link>https://sleepingbear-ai.github.io/tags/ai%E5%AD%A6%E4%B9%A0/</link>
-      <pubDate>Tue, 04 Aug 2026 10:00:00 -0700</pubDate>
+      <pubDate>Fri, 14 Aug 2026 10:00:00 -0700</pubDate>
       <guid>https://sleepingbear-ai.github.io/tags/ai%E5%AD%A6%E4%B9%A0/</guid>
       <description></description>
     </item>
     <item>
       <title>Gemini</title>
       <link>https://sleepingbear-ai.github.io/tags/gemini/</link>
-      <pubDate>Tue, 04 Aug 2026 10:00:00 -0700</pubDate>
+      <pubDate>Fri, 14 Aug 2026 10:00:00 -0700</pubDate>
       <guid>https://sleepingbear-ai.github.io/tags/gemini/</guid>
       <description></description>
     </item>
     <item>
       <title>Llm</title>
       <link>https://sleepingbear-ai.github.io/tags/llm/</link>
-      <pubDate>Tue, 04 Aug 2026 10:00:00 -0700</pubDate>
+      <pubDate>Fri, 14 Aug 2026 10:00:00 -0700</pubDate>
       <guid>https://sleepingbear-ai.github.io/tags/llm/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Semanticid</title>
+      <link>https://sleepingbear-ai.github.io/tags/semanticid/</link>
+      <pubDate>Fri, 14 Aug 2026 10:00:00 -0700</pubDate>
+      <guid>https://sleepingbear-ai.github.io/tags/semanticid/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Tokenminds</title>
+      <link>https://sleepingbear-ai.github.io/tags/tokenminds/</link>
+      <pubDate>Fri, 14 Aug 2026 10:00:00 -0700</pubDate>
+      <guid>https://sleepingbear-ai.github.io/tags/tokenminds/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Youtube</title>
+      <link>https://sleepingbear-ai.github.io/tags/youtube/</link>
+      <pubDate>Fri, 14 Aug 2026 10:00:00 -0700</pubDate>
+      <guid>https://sleepingbear-ai.github.io/tags/youtube/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>人工智能</title>
+      <link>https://sleepingbear-ai.github.io/tags/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/</link>
+      <pubDate>Fri, 14 Aug 2026 10:00:00 -0700</pubDate>
+      <guid>https://sleepingbear-ai.github.io/tags/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>大模型</title>
+      <link>https://sleepingbear-ai.github.io/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/</link>
+      <pubDate>Fri, 14 Aug 2026 10:00:00 -0700</pubDate>
+      <guid>https://sleepingbear-ai.github.io/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>推荐系统</title>
+      <link>https://sleepingbear-ai.github.io/tags/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/</link>
+      <pubDate>Fri, 14 Aug 2026 10:00:00 -0700</pubDate>
+      <guid>https://sleepingbear-ai.github.io/tags/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>生成式推荐</title>
+      <link>https://sleepingbear-ai.github.io/tags/%E7%94%9F%E6%88%90%E5%BC%8F%E6%8E%A8%E8%8D%90/</link>
+      <pubDate>Fri, 14 Aug 2026 10:00:00 -0700</pubDate>
+      <guid>https://sleepingbear-ai.github.io/tags/%E7%94%9F%E6%88%90%E5%BC%8F%E6%8E%A8%E8%8D%90/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>用户建模</title>
+      <link>https://sleepingbear-ai.github.io/tags/%E7%94%A8%E6%88%B7%E5%BB%BA%E6%A8%A1/</link>
+      <pubDate>Fri, 14 Aug 2026 10:00:00 -0700</pubDate>
+      <guid>https://sleepingbear-ai.github.io/tags/%E7%94%A8%E6%88%B7%E5%BB%BA%E6%A8%A1/</guid>
       <description></description>
     </item>
     <item>
@@ -51,52 +107,10 @@
       <description></description>
     </item>
     <item>
-      <title>Semanticid</title>
-      <link>https://sleepingbear-ai.github.io/tags/semanticid/</link>
-      <pubDate>Tue, 04 Aug 2026 10:00:00 -0700</pubDate>
-      <guid>https://sleepingbear-ai.github.io/tags/semanticid/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Youtube</title>
-      <link>https://sleepingbear-ai.github.io/tags/youtube/</link>
-      <pubDate>Tue, 04 Aug 2026 10:00:00 -0700</pubDate>
-      <guid>https://sleepingbear-ai.github.io/tags/youtube/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>人工智能</title>
-      <link>https://sleepingbear-ai.github.io/tags/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/</link>
-      <pubDate>Tue, 04 Aug 2026 10:00:00 -0700</pubDate>
-      <guid>https://sleepingbear-ai.github.io/tags/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>大模型</title>
-      <link>https://sleepingbear-ai.github.io/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/</link>
-      <pubDate>Tue, 04 Aug 2026 10:00:00 -0700</pubDate>
-      <guid>https://sleepingbear-ai.github.io/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>推荐系统</title>
-      <link>https://sleepingbear-ai.github.io/tags/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/</link>
-      <pubDate>Tue, 04 Aug 2026 10:00:00 -0700</pubDate>
-      <guid>https://sleepingbear-ai.github.io/tags/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/</guid>
-      <description></description>
-    </item>
-    <item>
       <title>生成式召回</title>
       <link>https://sleepingbear-ai.github.io/tags/%E7%94%9F%E6%88%90%E5%BC%8F%E5%8F%AC%E5%9B%9E/</link>
       <pubDate>Tue, 04 Aug 2026 10:00:00 -0700</pubDate>
       <guid>https://sleepingbear-ai.github.io/tags/%E7%94%9F%E6%88%90%E5%BC%8F%E5%8F%AC%E5%9B%9E/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>生成式推荐</title>
-      <link>https://sleepingbear-ai.github.io/tags/%E7%94%9F%E6%88%90%E5%BC%8F%E6%8E%A8%E8%8D%90/</link>
-      <pubDate>Tue, 04 Aug 2026 10:00:00 -0700</pubDate>
-      <guid>https://sleepingbear-ai.github.io/tags/%E7%94%9F%E6%88%90%E5%BC%8F%E6%8E%A8%E8%8D%90/</guid>
       <description></description>
     </item>
     <item>

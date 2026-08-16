@@ -6,8 +6,15 @@
     <description>Recent content in Semanticid on Welcome to the Blog of SleepingBear</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 04 Aug 2026 10:00:00 -0700</lastBuildDate>
+    <lastBuildDate>Fri, 14 Aug 2026 10:00:00 -0700</lastBuildDate>
     <atom:link href="https://sleepingbear-ai.github.io/tags/semanticid/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>TokenMinds 解释和思考：面向 YouTube 推荐的 LLM 用户建模</title>
+      <link>https://sleepingbear-ai.github.io/posts/tokenminds/</link>
+      <pubDate>Fri, 14 Aug 2026 10:00:00 -0700</pubDate>
+      <guid>https://sleepingbear-ai.github.io/posts/tokenminds/</guid>
+      <description>&lt;em&gt;TokenMinds（Google DeepMind &amp;amp; YouTube）用一个基于 Gemini LLM 的 encoder-decoder 同时生成 user embedding 和 40 个离散 user token，把长视频与短视频的用户建模统一到一个模型里，并通过异步生成和 Cache 服务数十亿用户。它把 YouTube PLUM 的生成式推荐框架从召回推进到了 user modeling。&lt;/em&gt;</description>
+    </item>
     <item>
       <title>YouTube PLUM 解释和思考：把 Gemini LLM 改造成工业级生成式召回模型</title>
       <link>https://sleepingbear-ai.github.io/posts/plum/</link>
