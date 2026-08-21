@@ -6,8 +6,15 @@
     <description>Recent content on Welcome to the Blog of SleepingBear</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 14 Aug 2026 10:00:00 -0700</lastBuildDate>
+    <lastBuildDate>Thu, 20 Aug 2026 10:00:00 -0700</lastBuildDate>
     <atom:link href="https://sleepingbear-ai.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>彼得·林奇的经典回测：为什么市场择时没有想象的那么重要？</title>
+      <link>https://sleepingbear-ai.github.io/posts/peter-lynch-market-timing/</link>
+      <pubDate>Thu, 20 Aug 2026 10:00:00 -0700</pubDate>
+      <guid>https://sleepingbear-ai.github.io/posts/peter-lynch-market-timing/</guid>
+      <description>&lt;em&gt;连续 30 年都买在年度最高点，年化回报仍有 10.6%；每年精准抄底，则是 11.7%。彼得·林奇这组著名回测真正说明的，不是买入价格不重要，而是对长期投资者来说，持续在场通常比猜中入场时点更重要。&lt;/em&gt;</description>
+    </item>
     <item>
       <title>TokenMinds 解释和思考：面向 YouTube 推荐的 LLM 用户建模</title>
       <link>https://sleepingbear-ai.github.io/posts/tokenminds/</link>

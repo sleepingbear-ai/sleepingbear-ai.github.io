@@ -2,6 +2,45 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://sleepingbear-ai.github.io/posts/</loc>
+    <lastmod>2026-08-20T10:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/tags/</loc>
+    <lastmod>2026-08-20T10:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/</loc>
+    <lastmod>2026-08-20T10:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/tags/%E5%A4%8D%E5%88%A9/</loc>
+    <lastmod>2026-08-20T10:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/tags/%E5%AE%9A%E6%8A%95/</loc>
+    <lastmod>2026-08-20T10:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/posts/peter-lynch-market-timing/</loc>
+    <lastmod>2026-08-20T10:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/tags/%E5%BD%BC%E5%BE%97%E6%9E%97%E5%A5%87/</loc>
+    <lastmod>2026-08-20T10:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/tags/%E6%8A%95%E8%B5%84/</loc>
+    <lastmod>2026-08-20T10:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/tags/%E6%8B%A9%E6%97%B6/</loc>
+    <lastmod>2026-08-20T10:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/tags/%E6%8C%87%E6%95%B0%E5%9F%BA%E9%87%91/</loc>
+    <lastmod>2026-08-20T10:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/tags/%E6%A0%87%E6%99%AE500/</loc>
+    <lastmod>2026-08-20T10:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/tags/%E8%82%A1%E5%B8%82/</loc>
+    <lastmod>2026-08-20T10:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/tags/%E8%B4%A2%E5%8A%A1%E8%87%AA%E7%94%B1/</loc>
+    <lastmod>2026-08-20T10:00:00-07:00</lastmod>
+  </url><url>
     <loc>https://sleepingbear-ai.github.io/tags/ai/</loc>
     <lastmod>2026-08-14T10:00:00-07:00</lastmod>
   </url><url>
@@ -14,22 +53,13 @@
     <loc>https://sleepingbear-ai.github.io/tags/llm/</loc>
     <lastmod>2026-08-14T10:00:00-07:00</lastmod>
   </url><url>
-    <loc>https://sleepingbear-ai.github.io/posts/</loc>
-    <lastmod>2026-08-14T10:00:00-07:00</lastmod>
-  </url><url>
     <loc>https://sleepingbear-ai.github.io/tags/semanticid/</loc>
-    <lastmod>2026-08-14T10:00:00-07:00</lastmod>
-  </url><url>
-    <loc>https://sleepingbear-ai.github.io/tags/</loc>
     <lastmod>2026-08-14T10:00:00-07:00</lastmod>
   </url><url>
     <loc>https://sleepingbear-ai.github.io/tags/tokenminds/</loc>
     <lastmod>2026-08-14T10:00:00-07:00</lastmod>
   </url><url>
     <loc>https://sleepingbear-ai.github.io/posts/tokenminds/</loc>
-    <lastmod>2026-08-14T10:00:00-07:00</lastmod>
-  </url><url>
-    <loc>https://sleepingbear-ai.github.io/</loc>
     <lastmod>2026-08-14T10:00:00-07:00</lastmod>
   </url><url>
     <loc>https://sleepingbear-ai.github.io/tags/youtube/</loc>
@@ -86,28 +116,13 @@
     <loc>https://sleepingbear-ai.github.io/tags/fire/</loc>
     <lastmod>2026-07-24T10:00:00-07:00</lastmod>
   </url><url>
-    <loc>https://sleepingbear-ai.github.io/tags/%E5%A4%8D%E5%88%A9/</loc>
-    <lastmod>2026-07-24T10:00:00-07:00</lastmod>
-  </url><url>
-    <loc>https://sleepingbear-ai.github.io/tags/%E5%AE%9A%E6%8A%95/</loc>
-    <lastmod>2026-07-24T10:00:00-07:00</lastmod>
-  </url><url>
     <loc>https://sleepingbear-ai.github.io/tags/%E5%BF%83%E7%90%86/</loc>
-    <lastmod>2026-07-24T10:00:00-07:00</lastmod>
-  </url><url>
-    <loc>https://sleepingbear-ai.github.io/tags/%E6%8A%95%E8%B5%84/</loc>
-    <lastmod>2026-07-24T10:00:00-07:00</lastmod>
-  </url><url>
-    <loc>https://sleepingbear-ai.github.io/tags/%E8%82%A1%E5%B8%82/</loc>
     <lastmod>2026-07-24T10:00:00-07:00</lastmod>
   </url><url>
     <loc>https://sleepingbear-ai.github.io/tags/%E8%AF%BB%E4%B9%A6/</loc>
     <lastmod>2026-07-24T10:00:00-07:00</lastmod>
   </url><url>
     <loc>https://sleepingbear-ai.github.io/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/</loc>
-    <lastmod>2026-07-24T10:00:00-07:00</lastmod>
-  </url><url>
-    <loc>https://sleepingbear-ai.github.io/tags/%E8%B4%A2%E5%8A%A1%E8%87%AA%E7%94%B1/</loc>
     <lastmod>2026-07-24T10:00:00-07:00</lastmod>
   </url><url>
     <loc>https://sleepingbear-ai.github.io/tags/%E9%87%91%E9%92%B1%E4%B8%8E%E5%B9%B8%E7%A6%8F/</loc>
