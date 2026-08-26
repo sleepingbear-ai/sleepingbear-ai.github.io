@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>SWE-agent 解释和思考：如何有效设计 Coding Agent | Welcome to the Blog of SleepingBear</title>
+<meta name="keywords" content="ai, aiagents, codingagent, sweagent, swebench, aci, llm, aicoding, 人工智能, ai学习, ai编程, 大模型">
+<meta name="description" content="SWE-agent（Princeton University）是 Coding Agent 领域的经典论文。它提出 Agent-Computer Interface（ACI），解释了为什么工具设计、context management 和 guardrails 会直接影响 Agent 的能力，并在不改变底层 LLM 的情况下，把 SWE-bench Lite 的问题解决率从 11.0% 提升到 18.0%。">
+<meta name="author" content="">
+<link rel="canonical" href="https://sleepingbear-ai.github.io/posts/swe_agent/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.cd9298b33628769aa1bc1acebbbfd7aa11ce81dfe03484d479e1907760249a1d.css" integrity="sha256-zZKYszYodpqhvBrOu7/XqhHOgd/gNITUeeGQd2Akmh0=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://sleepingbear-ai.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://sleepingbear-ai.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://sleepingbear-ai.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://sleepingbear-ai.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://sleepingbear-ai.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://sleepingbear-ai.github.io/posts/swe_agent/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://sleepingbear-ai.github.io/posts/swe_agent/">
+  <meta property="og:site_name" content="Welcome to the Blog of SleepingBear">
+  <meta property="og:title" content="SWE-agent 解释和思考：如何有效设计 Coding Agent">
+  <meta property="og:description" content="SWE-agent（Princeton University）是 Coding Agent 领域的经典论文。它提出 Agent-Computer Interface（ACI），解释了为什么工具设计、context management 和 guardrails 会直接影响 Agent 的能力，并在不改变底层 LLM 的情况下，把 SWE-bench Lite 的问题解决率从 11.0% 提升到 18.0%。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-08-25T10:00:00-07:00">
+    <meta property="article:modified_time" content="2026-08-25T10:00:00-07:00">
+    <meta property="article:tag" content="Ai">
+    <meta property="article:tag" content="Aiagents">
+    <meta property="article:tag" content="Codingagent">
+    <meta property="article:tag" content="Sweagent">
+    <meta property="article:tag" content="Swebench">
+    <meta property="article:tag" content="Aci">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="SWE-agent 解释和思考：如何有效设计 Coding Agent">
+  <meta name="twitter:description" content="SWE-agent（Princeton University）是 Coding Agent 领域的经典论文。它提出 Agent-Computer Interface（ACI），解释了为什么工具设计、context management 和 guardrails 会直接影响 Agent 的能力，并在不改变底层 LLM 的情况下，把 SWE-bench Lite 的问题解决率从 11.0% 提升到 18.0%。">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://sleepingbear-ai.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "SWE-agent 解释和思考：如何有效设计 Coding Agent",
+      "item": "https://sleepingbear-ai.github.io/posts/swe_agent/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "SWE-agent 解释和思考：如何有效设计 Coding Agent",
+  "name": "SWE-agent 解释和思考：如何有效设计 Coding Agent",
+  "description": "SWE-agent（Princeton University）是 Coding Agent 领域的经典论文。它提出 Agent-Computer Interface（ACI），解释了为什么工具设计、context management 和 guardrails 会直接影响 Agent 的能力，并在不改变底层 LLM 的情况下，把 SWE-bench Lite 的问题解决率从 11.0% 提升到 18.0%。",
+  "keywords": [
+    "ai", "aiagents", "codingagent", "sweagent", "swebench", "aci", "llm", "aicoding", "人工智能", "ai学习", "ai编程", "大模型"
+  ],
+  "articleBody": "SWE-agent（Princeton University）是 Coding Agent 领域的经典论文。它提出 Agent-Computer Interface（ACI），解释了为什么工具设计、context management 和 guardrails 会直接影响 Agent 的能力，并在不改变底层 LLM 的情况下，把 SWE-bench Lite 的问题解决率从 11.0% 提升到 18.0%。\n论文：SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering（Yang et al., Princeton University, NeurIPS 2024）\nTL;DR SWE-agent 是一篇关于 Coding Agent 的经典论文。它讨论的重点不是训练一个更强的模型，而是：怎样为 LLM 提供合适的工具和运行环境，让 LLM 成为一个能真正完成软件工程任务的 Agent。\n论文把 LLM 与计算机之间的交互层称为 Agent-Computer Interface（ACI）。SWE-agent 的 ACI 提供：\n简单、专用的代码搜索、浏览和编辑命令 每次操作后简洁但信息充分的反馈 会拒绝引入语法错误的修改 优先保留近期相关信息的 context management 在使用同一个 GPT-4 Turbo 模型时，仅用原始 Linux shell 为工具的 Agent 在 SWE-bench Lite 上解决率为 11.0%，加入 SWE-agent 的 ACI 后达到 18.0%，底层 LLM 权重完全不变。\n核心启发是：Agent 的能力不只取决于 LLM，也取决于围绕模型构建的软件环境。 一个有效的 AI Agent，需要在 evaluation 的指导下，优化工具、context management 和 guardrails。\n问题：Coding Agent 不只是一个 LLM 真实的软件工程任务要求 Agent 理解代码库、修复 GitHub issue，并提交能够通过测试的 patch。为此，Agent 通常要反复完成这些步骤：\n定位相关代码 复现并理解 bug 修改文件 运行程序和测试 分析失败原因，再次修改 这不是一次性的代码生成，而是一个 ReAct 风格的 Agent Loop。\nSWE-agent = LLM + ACI，而不只是一个被要求输出代码的 LLM。（论文 Figure 1，Yang et al., 2024。）\n早期 SWE-bench baseline 使用的是非交互式 RAG：先用 BM25 搜索出可能相关的文件，再让模型 一次性生成答案。这种方法成本低，但无法形成 Agent Loop——例如，模型看到 stack trace 后不能继续检查另一个文件，也不能运行代码、测试第一次修改，再根据结果迭代。\n为了对比，论文还测试了一个只把原始 Linux shell 作为工具调用的 Shell-only Agent。它虽然能执行 cd、grep、sed 等命令，并形成 Agent Loop，但也会遇到新的问题：Agent 可能浪费很多轮调用去组合底层命令，让过长的命令输出淹没 context window，或者做出思路正确、却存在语法错误的代码修改。\nSWE-agent 的答案：为 Coding Agent 设计结构化、有效的工具，同时做好 context management 和 guardrails。\nAgent-Computer Interface（ACI） ACI 定义的不只是一组工具，还包括：\nAgent 可以执行哪些 action，以及每个 action 的参数； 每次 action 后返回什么 observation； 如何验证操作，以及出错后如何恢复； 哪些历史交互会进入下一次 LLM 调用的 context。 论文总结了四条实用的 ACI 设计原则：\nSimple（简单）：action 应该容易被模型理解和使用。 Compact（紧凑）：一次 action 应尽量完成有意义的工作，减少不必要的步骤。 Informative but concise（信息充分但简洁）：反馈要让模型知道状态发生了什么变化，但不能用冗长输出淹没 context。 Guarded（有保护机制）：常见错误应该在扩散之前被发现和阻止。 SWE-agent 把这些原则实现成一个 ReAct 风格的 Agent Loop：LLM 每轮输出 一段思考和一个 action，Agent 运行环境执行该 action，再通过 ACI 将格式化后的 observation 返回给 LLM。\nGitHub issue + 代码仓库 │ ▼ LLM 推理 │ ▼ 搜索 / 查看 / 编辑 / 执行 │ ▼ 简洁的 observation + 受控的历史 context │ └──────────────► 循环，直到提交 patch 工具设计：Search 论文比较了三种代码搜索接口：\nNo Search：没有专用搜索工具，Agent 使用 ls、cd、grep 和 find 等标准 shell 命令自行查找。 Iterative Search：工具每次只显示一个搜索结果，Agent 用 next 和 previous 逐条浏览。 Summarized Search：SWE-agent 最终采用的方案。find_file、search_file 和 search_dir 会返回一个紧凑的结果摘要，最多显示 50 个匹配项；如果 query 过于宽泛，工具会要求 LLM 缩小范围，而不是直接返回大量内容。 Summarized Search 既帮助 Agent 快速定位代码，也避免它陷入机械地遍历每个结果的循环。（论文 Figure 4。）\n在 SWE-bench Lite 上，GPT-4 Turbo 的问题解决率为：Summarized Search（18.0%）\u003e No Search（15.7%）\u003e Iterative Search（12.0%）。\nIterative Search 对人类来说可能很熟悉，但 Agent 很容易机械地检查每一个匹配结果，反而比完全没有专用搜索工具更差。这个结果很好地说明了：适合人的软件界面，不一定适合 Agent。\n工具设计：File Viewer 和 Editor 论文也比较了三种代码编辑接口：\nNo Editor：Agent 使用 sed 或文件重定向等 shell 命令修改代码，需要多个步骤，而且操作后的反馈很弱。 Editor without Linting：edit 命令直接替换当前文件中的一段连续行，并立即显示修改后的文件，但即使修改引入语法错误也会接受。 Editor with Linting：如果修改产生语法错误，Editor 会执行 lint 检查并拒绝这次修改，同时显示错误信息和附近代码，让 Agent 能够立即恢复。 SWE-agent 最终选择 Editor with Linting：用一次紧凑的 action 完成代码修改，立即反馈结果，并通过 linting guardrail 防止错误修改继续传播。\nEditor 并非无关紧要的实现细节：在所有 ACI ablation 中，移除专用 Editor 带来的性能下降最大。（论文 Figure 5。）\nGPT-4 Turbo 在 SWE-bench Lite 上的问题解决率为：Editor with Linting（18.0%）\u003e Editor without Linting（15.0%）\u003e No Editor（10.3%）。\n专用 Editor 带来了主要收益，linting 又额外提升了 3 个百分点。原因很直观：语法错误如果没有被及时阻止，后续测试就会产生误导性的失败信息，Agent 可能沿着错误方向继续推理。\n论文还分别测试了 30 行、100 行和整个文件三种 File Viewer 窗口。SWE-agent 使用 100 行窗口，同时显示行号、文件路径、总行数和省略的行数；Agent 可以用 scroll_up、scroll_down 和 goto 导航。\n结果再次说明 context 不是越多越好：100 行（18.0%）\u003e 30 行（14.3%）\u003e Full File（12.7%）。30 行不足以呈现周围代码，而完整文件又会让无关内容占满 LLM 的注意力。\nContext Management 在 Agent Loop 中，每执行一次 action，LLM 的 context 都会继续增长。论文比较了三种管理方式：\nFull History：完整保留过去所有 observation，包括旧的文件内容和测试输出。 Last 5 Observations（SWE-agent 的方案）：最近 5 个 observation 完整保留；更早的 observation 被替换成一行 placeholder，保留它在执行轨迹中的位置，并标记省略了多少行。 Without Demonstration：同样使用 Last 5 Observations，但从 prompt 中移除 few-shot demonstration。这个 demonstration 是一个成功解题轨迹，主要作用是教 LLM 如何正确生成 ACI 工具调用。 GPT-4 Turbo 在 SWE-bench Lite 上的问题解决率为：Last 5 Observations（18.0%）\u003e Without Demonstration（16.3%）\u003e Full History（15.0%）。\n这里体现了 context management 的两个作用：few-shot demonstration 教模型如何正确使用工具；Context 压缩则让近期、相关的信息获得更高优先级。\n实验与结果 论文的主要 benchmark 是 SWE-bench：它包含来自 12 个 Python 代码仓库的 2,294 个真实 GitHub issue；SWE-bench Lite 是其中一个包含 300 个任务的子集。\n核心指标是 pass@1，论文也写作 % Resolved。每个任务只进行一次完整的 Agent 运行；生成的 patch 必须通过该任务的全部测试才算成功。例如，18% pass@1 表示每个任务只尝试一次时，平均每 100 个任务能解决 18 个。\n系统 模型 完整 SWE-bench SWE-bench Lite Non-interactive RAG GPT-4 Turbo 1.31% 2.67% Non-interactive RAG Claude 3 Opus 3.79% 4.33% Shell-only Agent GPT-4 Turbo — 11.00% SWE-agent GPT-4 Turbo 12.47% 18.00% SWE-agent Claude 3 Opus 10.46% 13.00% 论文 Table 1。\n在使用同一个 GPT-4 Turbo 模型时，SWE-bench Lite 的问题解决率为：SWE-agent（18.0%）\u003e Shell-only Agent（11.0%）\u003e One-shot RAG（2.67%）。\n与 Shell-only Agent 相比，SWE-agent 的结构化 ACI 让解决率相对提升约 64%。底层 LLM 不变，仅仅是工具和接口设计得更适合 Agent，就能产生如此明显的效果提升。\n我的一些想法 Agent 设计原则 SWE-agent 对 Coding Agent，乃至更广泛的 AI Agent 设计，都提供了几条重要原则：\nAgent 不只是 LLM。 模型只是系统中的一个组件；工具、observation、guardrails 和 context management 都会影响最终能力。\n工具设计很重要。 SWE-agent 证明，不改变底层模型，只改进工具也能显著提升表现。好的工具应该简单、紧凑、反馈充分并且带有保护机制。\nContext management 应优先保留相关信息。 最近的历史保留细节，过时的历史压缩；同时提供 demonstration，教 LLM 正确地使用工具。\nGuardrails 可以阻止错误扩散。 Linting 会拒绝引入语法错误的代码修改，避免一个小错误触发一连串具有误导性的后续失败。\n用 Evaluation 驱动设计。 Summarized Search、100 行 File Viewer 和 Last 5 Observations 都不是凭直觉决定的，而是通过 ablation experiment 比较出来的。\n局限与今天的视角 SWE-agent 是围绕 2024 年的特定 LLM 优化的。更新、更强的模型可能需要不同的 action 粒度和 context policy。 AI Agent 技术发展很快。Skills、更成熟的 Agent harness 和 Multi-Agent System 可以让 Agent 完成更复杂的任务；论文发表于 2024 年，自然没有涵盖这些后来日益重要的方向。 随着 LLM 能力增强，SWE-agent 中一些由固定规则完成的工作，现在也可能交给模型处理。例如，让 LLM 主动总结交互历史，并动态选择最相关的 context。 大方向 SWE-agent 最重要的观点是：LLM 周围的 interface 本身就是 Agent 的核心组成部分。 当 LLM 开始调用工具、在环境中采取 action 时，我们设计的就不再只是一段 prompt，而是一个面向新型“用户”——AI Agent——的软件环境。\n从这个角度看，很多传统的软件工程问题都会重新出现：\nAPI 应该提供多大粒度的操作？ 错误信息怎样既充分又简洁？ 哪些错误应该由系统直接拦截？ 有限的 context 应该如何分配？ 怎样用 evaluation 判断一种界面设计是否真的更好？ SWE-agent 之所以是 Coding Agent 领域的经典论文，正是因为它把“Interface 决定 Agent 能力”这个观点，变成了一套由实验数据驱动、具体且可复用的 Agent 设计原则。沿着这一思路，我认为 evaluation 驱动的设计还可以与正在探索的 self-improving loop 技术结合，形成持续评估、迭代和改进 Agent 的研发闭环。\n参考文献 Yang et al. SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering. Princeton University, NeurIPS 2024。 Jimenez et al. SWE-bench: Can Language Models Resolve Real-World GitHub Issues?. ICLR 2024。 #ai #aiagents #codingagent #sweagent #swebench #aci #llm #aicoding #人工智能 #ai学习 #ai编程 #大模型\n如果你觉得本文有帮助，欢迎点赞关注支持！\nIf you like this post, consider star the repo.\n",
+  "wordCount" : "697",
+  "inLanguage": "en",
+  "datePublished": "2026-08-25T10:00:00-07:00",
+  "dateModified": "2026-08-25T10:00:00-07:00",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sleepingbear-ai.github.io/posts/swe_agent/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Welcome to the Blog of SleepingBear",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://sleepingbear-ai.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://sleepingbear-ai.github.io/" accesskey="h" title="Welcome to the Blog of SleepingBear (Alt + H)">Welcome to the Blog of SleepingBear</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      SWE-agent 解释和思考：如何有效设计 Coding Agent
+    </h1>
+    <div class="post-meta">
+
+<span title='2026-08-25 10:00:00 -0700 PDT'>August 25, 2026</span>
+
+</div>
+  </header> 
+  <div class="post-content md-content"><p><em>SWE-agent（Princeton University）是 Coding Agent 领域的经典论文。它提出 Agent-Computer Interface（ACI），解释了为什么工具设计、context management 和 guardrails 会直接影响 Agent 的能力，并在不改变底层 LLM 的情况下，把 SWE-bench Lite 的问题解决率从 11.0% 提升到 18.0%。</em></p>
+<p>论文：<strong><a href="https://arxiv.org/abs/2405.15793">SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering</a></strong>（Yang et al., Princeton University, NeurIPS 2024）</p>
+<hr>
+<h2 id="tldr">TL;DR<a hidden class="anchor" aria-hidden="true" href="#tldr">#</a></h2>
+<p>SWE-agent 是一篇关于 <strong>Coding Agent</strong> 的经典论文。它讨论的重点不是训练一个更强的模型，而是：<strong>怎样为 LLM 提供合适的工具和运行环境，让 LLM 成为一个能真正完成软件工程任务的 Agent。</strong></p>
+<p>论文把 LLM 与计算机之间的交互层称为 <strong>Agent-Computer Interface（ACI）</strong>。SWE-agent 的 ACI 提供：</p>
+<ul>
+<li>简单、专用的代码搜索、浏览和编辑命令</li>
+<li>每次操作后简洁但信息充分的反馈</li>
+<li>会拒绝引入语法错误的修改</li>
+<li>优先保留近期相关信息的 context management</li>
+</ul>
+<p>在使用同一个 GPT-4 Turbo 模型时，仅用原始 Linux shell 为工具的 Agent 在 SWE-bench Lite 上解决率为 <strong>11.0%</strong>，加入 SWE-agent 的 ACI 后达到 <strong>18.0%</strong>，底层 LLM 权重完全不变。</p>
+<p>核心启发是：<strong>Agent 的能力不只取决于 LLM，也取决于围绕模型构建的软件环境。</strong> 一个有效的 AI Agent，需要在 evaluation 的指导下，优化工具、context management 和 guardrails。</p>
+<h2 id="问题coding-agent-不只是一个-llm">问题：Coding Agent 不只是一个 LLM<a hidden class="anchor" aria-hidden="true" href="#问题coding-agent-不只是一个-llm">#</a></h2>
+<p>真实的软件工程任务要求 Agent 理解代码库、修复 GitHub issue，并提交能够通过测试的 patch。为此，Agent 通常要反复完成这些步骤：</p>
+<ol>
+<li>定位相关代码</li>
+<li>复现并理解 bug</li>
+<li>修改文件</li>
+<li>运行程序和测试</li>
+<li>分析失败原因，再次修改</li>
+</ol>
+<p>这不是一次性的代码生成，而是一个 <strong>ReAct 风格的 Agent Loop</strong>。</p>
+<p><img alt="论文 Figure 1：SWE-agent 在语言模型与计算机之间加入 Agent-Computer Interface。模型通过接口发出命令，并从代码仓库和执行环境获得格式化后的 observation。" loading="lazy" src="/posts/swe_agent/fig1-overview.png"></p>
+<p><em>SWE-agent = LLM + ACI，而不只是一个被要求输出代码的 LLM。（<a href="https://arxiv.org/abs/2405.15793">论文</a> Figure 1，Yang et al., 2024。）</em></p>
+<p>早期 SWE-bench baseline 使用的是非交互式 <strong>RAG</strong>：先用 BM25 搜索出可能相关的文件，再让模型 <strong>一次性</strong>生成答案。这种方法成本低，但无法形成 Agent Loop——例如，模型看到 stack trace 后不能继续检查另一个文件，也不能运行代码、测试第一次修改，再根据结果迭代。</p>
+<p>为了对比，论文还测试了一个只把原始 Linux shell 作为工具调用的 <strong>Shell-only Agent</strong>。它虽然能执行 <code>cd</code>、<code>grep</code>、<code>sed</code> 等命令，并形成 Agent Loop，但也会遇到新的问题：Agent 可能浪费很多轮调用去组合底层命令，让过长的命令输出淹没 context window，或者做出思路正确、却存在语法错误的代码修改。</p>
+<p><strong>SWE-agent 的答案</strong>：为 Coding Agent 设计结构化、有效的工具，同时做好 context management 和 guardrails。</p>
+<h2 id="agent-computer-interfaceaci">Agent-Computer Interface（ACI）<a hidden class="anchor" aria-hidden="true" href="#agent-computer-interfaceaci">#</a></h2>
+<p>ACI 定义的不只是一组工具，还包括：</p>
+<ul>
+<li>Agent 可以执行哪些 action，以及每个 action 的参数；</li>
+<li>每次 action 后返回什么 observation；</li>
+<li>如何验证操作，以及出错后如何恢复；</li>
+<li>哪些历史交互会进入下一次 LLM 调用的 context。</li>
+</ul>
+<p>论文总结了四条实用的 ACI 设计原则：</p>
+<ol>
+<li><strong>Simple（简单）</strong>：action 应该容易被模型理解和使用。</li>
+<li><strong>Compact（紧凑）</strong>：一次 action 应尽量完成有意义的工作，减少不必要的步骤。</li>
+<li><strong>Informative but concise（信息充分但简洁）</strong>：反馈要让模型知道状态发生了什么变化，但不能用冗长输出淹没 context。</li>
+<li><strong>Guarded（有保护机制）</strong>：常见错误应该在扩散之前被发现和阻止。</li>
+</ol>
+<p>SWE-agent 把这些原则实现成一个 ReAct 风格的 Agent Loop：LLM 每轮输出 <strong>一段思考和一个 action</strong>，Agent 运行环境执行该 action，再通过 ACI 将格式化后的 observation 返回给 LLM。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>GitHub issue + 代码仓库
+</span></span><span style="display:flex;"><span>          │
+</span></span><span style="display:flex;"><span>          ▼
+</span></span><span style="display:flex;"><span>       LLM 推理
+</span></span><span style="display:flex;"><span>          │
+</span></span><span style="display:flex;"><span>          ▼
+</span></span><span style="display:flex;"><span>  搜索 / 查看 / 编辑 / 执行
+</span></span><span style="display:flex;"><span>          │
+</span></span><span style="display:flex;"><span>          ▼
+</span></span><span style="display:flex;"><span> 简洁的 observation + 受控的历史 context
+</span></span><span style="display:flex;"><span>          │
+</span></span><span style="display:flex;"><span>          └──────────────► 循环，直到提交 patch
+</span></span></code></pre></div><h3 id="工具设计search">工具设计：Search<a hidden class="anchor" aria-hidden="true" href="#工具设计search">#</a></h3>
+<p>论文比较了三种代码搜索接口：</p>
+<ul>
+<li><strong>No Search</strong>：没有专用搜索工具，Agent 使用 <code>ls</code>、<code>cd</code>、<code>grep</code> 和 <code>find</code> 等标准 shell 命令自行查找。</li>
+<li><strong>Iterative Search</strong>：工具每次只显示一个搜索结果，Agent 用 <code>next</code> 和 <code>previous</code> 逐条浏览。</li>
+<li><strong>Summarized Search</strong>：SWE-agent 最终采用的方案。<code>find_file</code>、<code>search_file</code> 和 <code>search_dir</code> 会返回一个紧凑的结果摘要，最多显示 <strong>50 个匹配项</strong>；如果 query 过于宽泛，工具会要求 LLM 缩小范围，而不是直接返回大量内容。</li>
+</ul>
+<p><img alt="论文中的搜索接口对比：Shell-only Agent 需要执行多个命令；Iterative Search 每次浏览一个结果；Summarized Search 返回紧凑的全局结果，并要求 Agent 收窄过于宽泛的查询。" loading="lazy" src="/posts/swe_agent/fig3-search-comparison.png"></p>
+<p><em>Summarized Search 既帮助 Agent 快速定位代码，也避免它陷入机械地遍历每个结果的循环。（<a href="https://arxiv.org/abs/2405.15793">论文</a> Figure 4。）</em></p>
+<p>在 SWE-bench Lite 上，GPT-4 Turbo 的问题解决率为：<strong>Summarized Search（18.0%）&gt; No Search（15.7%）&gt; Iterative Search（12.0%）</strong>。</p>
+<p>Iterative Search 对人类来说可能很熟悉，但 Agent 很容易机械地检查每一个匹配结果，反而比完全没有专用搜索工具更差。这个结果很好地说明了：<strong>适合人的软件界面，不一定适合 Agent。</strong></p>
+<h3 id="工具设计file-viewer-和-editor">工具设计：File Viewer 和 Editor<a hidden class="anchor" aria-hidden="true" href="#工具设计file-viewer-和-editor">#</a></h3>
+<p>论文也比较了三种代码编辑接口：</p>
+<ul>
+<li><strong>No Editor</strong>：Agent 使用 <code>sed</code> 或文件重定向等 shell 命令修改代码，需要多个步骤，而且操作后的反馈很弱。</li>
+<li><strong>Editor without Linting</strong>：<code>edit</code> 命令直接替换当前文件中的一段连续行，并立即显示修改后的文件，但即使修改引入语法错误也会接受。</li>
+<li><strong>Editor with Linting</strong>：如果修改产生语法错误，Editor 会执行 lint 检查并拒绝这次修改，同时显示错误信息和附近代码，让 Agent 能够立即恢复。</li>
+</ul>
+<p>SWE-agent 最终选择 <strong>Editor with Linting</strong>：用一次紧凑的 action 完成代码修改，立即反馈结果，并通过 linting guardrail 防止错误修改继续传播。</p>
+<p><img alt="论文中的编辑接口对比：使用原始 shell 编辑需要多个命令、反馈较弱；专用 edit action 一步完成修改；linting 会在语法错误扩散前拒绝这次修改。" loading="lazy" src="/posts/swe_agent/fig4-edit-comparison.png"></p>
+<p><em>Editor 并非无关紧要的实现细节：在所有 ACI ablation 中，移除专用 Editor 带来的性能下降最大。（<a href="https://arxiv.org/abs/2405.15793">论文</a> Figure 5。）</em></p>
+<p>GPT-4 Turbo 在 SWE-bench Lite 上的问题解决率为：<strong>Editor with Linting（18.0%）&gt; Editor without Linting（15.0%）&gt; No Editor（10.3%）</strong>。</p>
+<p>专用 Editor 带来了主要收益，linting 又额外提升了 3 个百分点。原因很直观：语法错误如果没有被及时阻止，后续测试就会产生误导性的失败信息，Agent 可能沿着错误方向继续推理。</p>
+<p>论文还分别测试了 <strong>30 行、100 行和整个文件</strong>三种 File Viewer 窗口。SWE-agent 使用 <strong>100 行</strong>窗口，同时显示行号、文件路径、总行数和省略的行数；Agent 可以用 <code>scroll_up</code>、<code>scroll_down</code> 和 <code>goto</code> 导航。</p>
+<p>结果再次说明 context 不是越多越好：<strong>100 行（18.0%）&gt; 30 行（14.3%）&gt; Full File（12.7%）</strong>。30 行不足以呈现周围代码，而完整文件又会让无关内容占满 LLM 的注意力。</p>
+<h3 id="context-management">Context Management<a hidden class="anchor" aria-hidden="true" href="#context-management">#</a></h3>
+<p>在 Agent Loop 中，每执行一次 action，LLM 的 context 都会继续增长。论文比较了三种管理方式：</p>
+<ul>
+<li><strong>Full History</strong>：完整保留过去所有 observation，包括旧的文件内容和测试输出。</li>
+<li><strong>Last 5 Observations（SWE-agent 的方案）</strong>：最近 5 个 observation 完整保留；更早的 observation 被替换成一行 placeholder，保留它在执行轨迹中的位置，并标记省略了多少行。</li>
+<li><strong>Without Demonstration</strong>：同样使用 Last 5 Observations，但从 prompt 中移除 few-shot demonstration。这个 demonstration 是一个成功解题轨迹，主要作用是教 LLM 如何正确生成 ACI 工具调用。</li>
+</ul>
+<p>GPT-4 Turbo 在 SWE-bench Lite 上的问题解决率为：<strong>Last 5 Observations（18.0%）&gt; Without Demonstration（16.3%）&gt; Full History（15.0%）</strong>。</p>
+<p>这里体现了 context management 的两个作用：few-shot demonstration 教模型如何正确使用工具；Context 压缩则让近期、相关的信息获得更高优先级。</p>
+<h2 id="实验与结果">实验与结果<a hidden class="anchor" aria-hidden="true" href="#实验与结果">#</a></h2>
+<p>论文的主要 benchmark 是 <strong>SWE-bench</strong>：它包含来自 12 个 Python 代码仓库的 2,294 个真实 GitHub issue；<strong>SWE-bench Lite</strong> 是其中一个包含 300 个任务的子集。</p>
+<p>核心指标是 <strong>pass@1</strong>，论文也写作 <strong>% Resolved</strong>。每个任务只进行一次完整的 Agent 运行；生成的 patch 必须通过该任务的全部测试才算成功。例如，18% pass@1 表示每个任务只尝试一次时，平均每 100 个任务能解决 18 个。</p>
+<table>
+	<thead>
+			<tr>
+					<th style="text-align: left">系统</th>
+					<th style="text-align: left">模型</th>
+					<th style="text-align: right">完整 SWE-bench</th>
+					<th style="text-align: right">SWE-bench Lite</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: left">Non-interactive RAG</td>
+					<td style="text-align: left">GPT-4 Turbo</td>
+					<td style="text-align: right">1.31%</td>
+					<td style="text-align: right">2.67%</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">Non-interactive RAG</td>
+					<td style="text-align: left">Claude 3 Opus</td>
+					<td style="text-align: right">3.79%</td>
+					<td style="text-align: right">4.33%</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">Shell-only Agent</td>
+					<td style="text-align: left">GPT-4 Turbo</td>
+					<td style="text-align: right">—</td>
+					<td style="text-align: right">11.00%</td>
+			</tr>
+			<tr>
+					<td style="text-align: left"><strong>SWE-agent</strong></td>
+					<td style="text-align: left"><strong>GPT-4 Turbo</strong></td>
+					<td style="text-align: right"><strong>12.47%</strong></td>
+					<td style="text-align: right"><strong>18.00%</strong></td>
+			</tr>
+			<tr>
+					<td style="text-align: left">SWE-agent</td>
+					<td style="text-align: left">Claude 3 Opus</td>
+					<td style="text-align: right">10.46%</td>
+					<td style="text-align: right">13.00%</td>
+			</tr>
+	</tbody>
+</table>
+<p><em><a href="https://arxiv.org/abs/2405.15793">论文</a> Table 1。</em></p>
+<p>在使用同一个 GPT-4 Turbo 模型时，SWE-bench Lite 的问题解决率为：<strong>SWE-agent（18.0%）&gt; Shell-only Agent（11.0%）&gt; One-shot RAG（2.67%）</strong>。</p>
+<p>与 Shell-only Agent 相比，SWE-agent 的结构化 ACI 让解决率相对提升约 <strong>64%</strong>。底层 LLM 不变，仅仅是工具和接口设计得更适合 Agent，就能产生如此明显的效果提升。</p>
+<h2 id="我的一些想法">我的一些想法<a hidden class="anchor" aria-hidden="true" href="#我的一些想法">#</a></h2>
+<h3 id="agent-设计原则">Agent 设计原则<a hidden class="anchor" aria-hidden="true" href="#agent-设计原则">#</a></h3>
+<p>SWE-agent 对 Coding Agent，乃至更广泛的 AI Agent 设计，都提供了几条重要原则：</p>
+<ul>
+<li>
+<p><strong>Agent 不只是 LLM。</strong> 模型只是系统中的一个组件；工具、observation、guardrails 和 context management 都会影响最终能力。</p>
+</li>
+<li>
+<p><strong>工具设计很重要。</strong> SWE-agent 证明，不改变底层模型，只改进工具也能显著提升表现。好的工具应该简单、紧凑、反馈充分并且带有保护机制。</p>
+</li>
+<li>
+<p><strong>Context management 应优先保留相关信息。</strong> 最近的历史保留细节，过时的历史压缩；同时提供 demonstration，教 LLM 正确地使用工具。</p>
+</li>
+<li>
+<p><strong>Guardrails 可以阻止错误扩散。</strong> Linting 会拒绝引入语法错误的代码修改，避免一个小错误触发一连串具有误导性的后续失败。</p>
+</li>
+<li>
+<p><strong>用 Evaluation 驱动设计。</strong> Summarized Search、100 行 File Viewer 和 Last 5 Observations 都不是凭直觉决定的，而是通过 ablation experiment 比较出来的。</p>
+</li>
+</ul>
+<h3 id="局限与今天的视角">局限与今天的视角<a hidden class="anchor" aria-hidden="true" href="#局限与今天的视角">#</a></h3>
+<ul>
+<li>SWE-agent 是围绕 2024 年的特定 LLM 优化的。更新、更强的模型可能需要不同的 action 粒度和 context policy。</li>
+<li>AI Agent 技术发展很快。Skills、更成熟的 Agent harness 和 Multi-Agent System 可以让 Agent 完成更复杂的任务；论文发表于 2024 年，自然没有涵盖这些后来日益重要的方向。</li>
+<li>随着 LLM 能力增强，SWE-agent 中一些由固定规则完成的工作，现在也可能交给模型处理。例如，让 LLM 主动总结交互历史，并动态选择最相关的 context。</li>
+</ul>
+<h3 id="大方向">大方向<a hidden class="anchor" aria-hidden="true" href="#大方向">#</a></h3>
+<p>SWE-agent 最重要的观点是：<strong>LLM 周围的 interface 本身就是 Agent 的核心组成部分。</strong> 当 LLM 开始调用工具、在环境中采取 action 时，我们设计的就不再只是一段 prompt，而是一个面向新型“用户”——AI Agent——的软件环境。</p>
+<p>从这个角度看，很多传统的软件工程问题都会重新出现：</p>
+<ul>
+<li>API 应该提供多大粒度的操作？</li>
+<li>错误信息怎样既充分又简洁？</li>
+<li>哪些错误应该由系统直接拦截？</li>
+<li>有限的 context 应该如何分配？</li>
+<li>怎样用 evaluation 判断一种界面设计是否真的更好？</li>
+</ul>
+<p>SWE-agent 之所以是 Coding Agent 领域的经典论文，正是因为它把“Interface 决定 Agent 能力”这个观点，变成了一套由实验数据驱动、具体且可复用的 Agent 设计原则。沿着这一思路，我认为 evaluation 驱动的设计还可以与正在探索的 self-improving loop 技术结合，形成持续评估、迭代和改进 Agent 的研发闭环。</p>
+<h2 id="参考文献">参考文献<a hidden class="anchor" aria-hidden="true" href="#参考文献">#</a></h2>
+<ol>
+<li>Yang et al. <strong><a href="https://arxiv.org/abs/2405.15793">SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering</a></strong>. Princeton University, NeurIPS 2024。</li>
+<li>Jimenez et al. <strong><a href="https://arxiv.org/abs/2310.06770">SWE-bench: Can Language Models Resolve Real-World GitHub Issues?</a></strong>. ICLR 2024。</li>
+</ol>
+<hr>
+<p>#ai #aiagents #codingagent #sweagent #swebench #aci #llm #aicoding #人工智能 #ai学习 #ai编程 #大模型</p>
+<p>如果你觉得本文有帮助，欢迎<a href="https://www.rednote.com/user/profile/61d67d89000000001000c76b">点赞关注</a>支持！</p>
+<p>If you like this post, consider star <a href="https://github.com/sleepingbear-ai/sleepingbear-ai.github.io">the repo</a>.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://sleepingbear-ai.github.io/tags/ai/">Ai</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/aiagents/">Aiagents</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/codingagent/">Codingagent</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/sweagent/">Sweagent</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/swebench/">Swebench</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/aci/">Aci</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/llm/">Llm</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/aicoding/">Aicoding</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/">人工智能</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/ai%E5%AD%A6%E4%B9%A0/">Ai学习</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/ai%E7%BC%96%E7%A8%8B/">Ai编程</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/">大模型</a></li>
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://sleepingbear-ai.github.io/">Welcome to the Blog of SleepingBear</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    window.onscroll = function () {
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
+        } else {
+            toplink.classList.add("hidden");
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

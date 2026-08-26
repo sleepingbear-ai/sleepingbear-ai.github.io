@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="en" dir="auto" data-theme="auto">
 
-<head>
-	<meta name="generator" content="Hugo 0.164.0"><meta charset="utf-8">
+<head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>Welcome to the Blog of SleepingBear</title>
-
+<title>Sweagent | Welcome to the Blog of SleepingBear</title>
+<meta name="keywords" content="">
 <meta name="description" content="">
 <meta name="author" content="">
-<link rel="canonical" href="https://sleepingbear-ai.github.io/">
+<link rel="canonical" href="https://sleepingbear-ai.github.io/tags/sweagent/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.cd9298b33628769aa1bc1acebbbfd7aa11ce81dfe03484d479e1907760249a1d.css" integrity="sha256-zZKYszYodpqhvBrOu7/XqhHOgd/gNITUeeGQd2Akmh0=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://sleepingbear-ai.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://sleepingbear-ai.github.io/favicon-16x16.png">
@@ -19,8 +18,8 @@
 <link rel="mask-icon" href="https://sleepingbear-ai.github.io/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" type="application/rss+xml" href="https://sleepingbear-ai.github.io/index.xml" title="rss">
-<link rel="alternate" hreflang="en" href="https://sleepingbear-ai.github.io/">
+<link rel="alternate" type="application/rss+xml" href="https://sleepingbear-ai.github.io/tags/sweagent/index.xml" title="rss">
+<link rel="alternate" hreflang="en" href="https://sleepingbear-ai.github.io/tags/sweagent/">
 <noscript>
     <style>
         #theme-toggle,
@@ -66,28 +65,15 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://sleepingbear-ai.github.io/">
+</script><meta property="og:url" content="https://sleepingbear-ai.github.io/tags/sweagent/">
   <meta property="og:site_name" content="Welcome to the Blog of SleepingBear">
-  <meta property="og:title" content="Welcome to the Blog of SleepingBear">
+  <meta property="og:title" content="Sweagent">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="website">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Welcome to the Blog of SleepingBear">
+  <meta name="twitter:title" content="Sweagent">
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "Welcome to the Blog of SleepingBear",
-  "url": "https://sleepingbear-ai.github.io/",
-  "description": "",
-  "logo": "https://sleepingbear-ai.github.io/favicon.ico",
-  "sameAs": [
-      
-  ]
-}
-</script>
 </head>
 <body class="list" id="top">
     <header class="header">
@@ -122,48 +108,25 @@
     </nav>
 </header>
 <main class="main"> 
+<header class="page-header">
+  <h1>
+    Sweagent
+  </h1>
+</header>
 
-<article class="post-entry"> 
+<article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">Anthropic Deep Research: Multi-Agent 架构
+    <h2 class="entry-hint-parent">SWE-agent 解释和思考：如何有效设计 Coding Agent
     </h2>
   </header>
   <div class="entry-content">
-    <p>Anthropic 发布了一篇很好的工程博客，讲他们如何用 Multi-Agent 架构来构建 Deep Research 功能。这是一个非常典型的 Multi-Agent 架构， 有很多有价值的创新和实践经验， 值得 AI Engineer 学习。
-原文：How we built our multi-agent research system
-一、为什么要用 Multi-Agent？ Anthropic 给 Deep Research 的定义：开放式（open-ended）的问题，很难提前预测需要哪些步骤。你没法为探索复杂主题写死一条固定路径，因为这个过程本身是动态的、路径依赖（path-dependent）的——随着调查展开，需要灵活地转向或追查旁支线索。
-正因为这种开放性，Multi-Agent 架构很合适，原因：
-并行探索：多个 subagents 同时进行，各自用独立的 context window，探索问题的不同侧面。 关注点分离（separation of concerns）：每个 subagent 有自己独立的工具、prompt 和探索轨迹，这降低了路径依赖，让每条调查更深入、更独立。 突破单 context 上限：研究要处理的信息常常超出 Single-Agent 的 context window，多个 Agent 分摊就能装下更多。 效果有多好？Anthropic 给了一个数字：用 Claude Opus 4 当 lead agent, Claude Sonnet 4 当 subagents 的 Multi-Agent 系统，在内部研究评测上比 Single-Agent （用 Opus 4） 高出 90.2%。
-...</p>
+    <p>SWE-agent（Princeton University）是 Coding Agent 领域的经典论文。它提出 Agent-Computer Interface（ACI），解释了为什么工具设计、context management 和 guardrails 会直接影响 Agent 的能力，并在不改变底层 LLM 的情况下，把 SWE-bench Lite 的问题解决率从 11.0% 提升到 18.0%。</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-10 10:00:00 -0700 PDT'>June 10, 2026</span></footer>
-  <a class="entry-link" aria-label="post link to Anthropic Deep Research: Multi-Agent 架构" href="https://sleepingbear-ai.github.io/posts/anthropic-multi-agent-research/"></a>
+<span title='2026-08-25 10:00:00 -0700 PDT'>August 25, 2026</span></footer>
+  <a class="entry-link" aria-label="post link to SWE-agent 解释和思考：如何有效设计 Coding Agent" href="https://sleepingbear-ai.github.io/posts/swe_agent/"></a>
 </article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Introduction
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>Introduction This is a blog in English and Chinese, about AI, Reading, and Thoughts on many things.
-这是一个中英文博客， 关于： 人工智能， 阅读, 和诸般思考。
-</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-05-21 15:18:55 -0700 PDT'>May 21, 2026</span></footer>
-  <a class="entry-link" aria-label="post link to Introduction" href="https://sleepingbear-ai.github.io/posts/firstpost/"></a>
-</article>
-<footer class="page-footer">
-  <nav class="pagination">
-    <a class="prev" href="https://sleepingbear-ai.github.io/">
-      «&nbsp;Prev&nbsp;
-    </a>
-  </nav>
-</footer>
     </main>
     
 <footer class="footer">

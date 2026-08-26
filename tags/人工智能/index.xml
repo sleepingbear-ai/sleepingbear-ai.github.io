@@ -6,8 +6,15 @@
     <description>Recent content in 人工智能 on Welcome to the Blog of SleepingBear</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 14 Aug 2026 10:00:00 -0700</lastBuildDate>
+    <lastBuildDate>Tue, 25 Aug 2026 10:00:00 -0700</lastBuildDate>
     <atom:link href="https://sleepingbear-ai.github.io/tags/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>SWE-agent 解释和思考：如何有效设计 Coding Agent</title>
+      <link>https://sleepingbear-ai.github.io/posts/swe_agent/</link>
+      <pubDate>Tue, 25 Aug 2026 10:00:00 -0700</pubDate>
+      <guid>https://sleepingbear-ai.github.io/posts/swe_agent/</guid>
+      <description>&lt;em&gt;SWE-agent（Princeton University）是 Coding Agent 领域的经典论文。它提出 Agent-Computer Interface（ACI），解释了为什么工具设计、context management 和 guardrails 会直接影响 Agent 的能力，并在不改变底层 LLM 的情况下，把 SWE-bench Lite 的问题解决率从 11.0% 提升到 18.0%。&lt;/em&gt;</description>
+    </item>
     <item>
       <title>TokenMinds 解释和思考：面向 YouTube 推荐的 LLM 用户建模</title>
       <link>https://sleepingbear-ai.github.io/posts/tokenminds/</link>
