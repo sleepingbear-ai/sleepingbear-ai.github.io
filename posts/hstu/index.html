@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Meta HSTU 解释和思考：如何把推荐系统做大 | Welcome to the Blog of SleepingBear</title>
+<meta name="keywords" content="ai, 推荐系统, 生成式推荐, hstu, generativerecommender, dlrm, scalinglaw, meta, 人工智能, ai学习, 大模型">
+<meta name="description" content="Meta HSTU 把推荐系统中的 Retrieval和 Ranking 重构为用户序列预测问题， 统一模型特征为一个用户序列，并用高效设计的HSTU Attention Block、Stochastic Length 和 M-FALCON 大幅降低训练与推理成本。最终，1.5 万亿参数的大推荐系统模型在A/B Test 中最高提升 12.4%，并呈现跨三个数量级的 Compute Scaling Law。">
+<meta name="author" content="">
+<link rel="canonical" href="https://sleepingbear-ai.github.io/posts/hstu/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.cd9298b33628769aa1bc1acebbbfd7aa11ce81dfe03484d479e1907760249a1d.css" integrity="sha256-zZKYszYodpqhvBrOu7/XqhHOgd/gNITUeeGQd2Akmh0=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://sleepingbear-ai.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://sleepingbear-ai.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://sleepingbear-ai.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://sleepingbear-ai.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://sleepingbear-ai.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://sleepingbear-ai.github.io/posts/hstu/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://sleepingbear-ai.github.io/posts/hstu/">
+  <meta property="og:site_name" content="Welcome to the Blog of SleepingBear">
+  <meta property="og:title" content="Meta HSTU 解释和思考：如何把推荐系统做大">
+  <meta property="og:description" content="Meta HSTU 把推荐系统中的 Retrieval和 Ranking 重构为用户序列预测问题， 统一模型特征为一个用户序列，并用高效设计的HSTU Attention Block、Stochastic Length 和 M-FALCON 大幅降低训练与推理成本。最终，1.5 万亿参数的大推荐系统模型在A/B Test 中最高提升 12.4%，并呈现跨三个数量级的 Compute Scaling Law。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-09-20T10:00:00-07:00">
+    <meta property="article:modified_time" content="2026-09-20T10:00:00-07:00">
+    <meta property="article:tag" content="Ai">
+    <meta property="article:tag" content="推荐系统">
+    <meta property="article:tag" content="生成式推荐">
+    <meta property="article:tag" content="Hstu">
+    <meta property="article:tag" content="Generativerecommender">
+    <meta property="article:tag" content="Dlrm">
+      <meta property="og:image" content="https://sleepingbear-ai.github.io/posts/hstu/fig2-dlrm-vs-gr-features-training.svg">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://sleepingbear-ai.github.io/posts/hstu/fig2-dlrm-vs-gr-features-training.svg">
+  <meta name="twitter:title" content="Meta HSTU 解释和思考：如何把推荐系统做大">
+  <meta name="twitter:description" content="Meta HSTU 把推荐系统中的 Retrieval和 Ranking 重构为用户序列预测问题， 统一模型特征为一个用户序列，并用高效设计的HSTU Attention Block、Stochastic Length 和 M-FALCON 大幅降低训练与推理成本。最终，1.5 万亿参数的大推荐系统模型在A/B Test 中最高提升 12.4%，并呈现跨三个数量级的 Compute Scaling Law。">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://sleepingbear-ai.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Meta HSTU 解释和思考：如何把推荐系统做大",
+      "item": "https://sleepingbear-ai.github.io/posts/hstu/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Meta HSTU 解释和思考：如何把推荐系统做大",
+  "name": "Meta HSTU 解释和思考：如何把推荐系统做大",
+  "description": "Meta HSTU 把推荐系统中的 Retrieval和 Ranking 重构为用户序列预测问题， 统一模型特征为一个用户序列，并用高效设计的HSTU Attention Block、Stochastic Length 和 M-FALCON 大幅降低训练与推理成本。最终，1.5 万亿参数的大推荐系统模型在A/B Test 中最高提升 12.4%，并呈现跨三个数量级的 Compute Scaling Law。",
+  "keywords": [
+    "ai", "推荐系统", "生成式推荐", "hstu", "generativerecommender", "dlrm", "scalinglaw", "meta", "人工智能", "ai学习", "大模型"
+  ],
+  "articleBody": "Meta HSTU 把推荐系统中的 Retrieval和 Ranking 重构为用户序列预测问题， 统一模型特征为一个用户序列，并用高效设计的HSTU Attention Block、Stochastic Length 和 M-FALCON 大幅降低训练与推理成本。最终，1.5 万亿参数的大推荐系统模型在A/B Test 中最高提升 12.4%，并呈现跨三个数量级的 Compute Scaling Law。\n论文：Actions Speak Louder than Words: Trillion-Parameter Sequential Transducers for Generative Recommendations（Zhai et al., Meta, ICML 2024）\n代码：meta-recsys/generative-recommenders\nTL;DR 传统工业推荐中的 Deep Learning Recommendation Model（DLRM） 依赖大量人工构造的 categorical, numerical features 和复杂的 feature interaction module。但scale up 模型时效果不一定有突破。\n这篇论文提出 Generative Recommender（GR）：把 item、用户 action 和其他 categorical feature 按时间合并成一条序列，再把 Retrieval 与 Ranking 都重构成序列预测问题。这里的“生成式”不是生成文字或视频，而是对用户行为序列建模，并预测序列中下一个 item 或 action。\n整套系统的关键：\n统一 Feature Space：把异构 categorical feature sequentialize；让模型从原始用户序列中学习原本由 counter、ratio 表达的统计特征。 HSTU Encoder：设计高效的Attention Block，并针对 jagged、超长推荐序列优化内存和 kernel。 M-FALCON Serving：把大量候选 item 分成 micro-batch，复用用户历史的计算和 KV cache，让复杂的 target-aware 模型能高效实现。 结果很亮眼：最大模型达到 1.5T 参数；生产系统 A/B Test 的两个主要指标提升 12.4% / 4.4%；用户序列长度 8,192 时，HSTU 训练速度比基于 FlashAttention-2 的 Transformer 快 5.3x-15.2x。更重要的是，GR 的效果随训练 compute 在三个数量级上近似 power law 增长。\n把 Retrieval 和 Ranking 重构为 Seq2Seq 预测问题 这篇论文把推荐写成 sequence-to-sequence（Seq2Seq）预测问题，但 Retrieval 和 Ranking 使用不同的 input/output sequence。\n用一个最简单的例子说明。假设用户依次看了做饭、旅行和篮球三个视频，对应的 action 分别是点赞、看完和跳过。完整序列是：\n做饭视频 → 点赞 → 旅行视频 → 看完 → 篮球视频 → 跳过 对于 Ranking，输入是 item 与 action 交错的序列；模型在每个 item 的位置预测用户对它采取的 action：\nRanking input: 做饭视频 → 点赞 → 旅行视频 → 看完 → 篮球视频 → 跳过 Ranking output: 点赞 → ∅ → 看完 → ∅ → 跳过 → ∅ 例如，对候选“篮球视频”，模型预测用户会“跳过”。\nRanking 学习的是：\np(action | 用户历史, candidate item) 对于 Retrieval，论文把每个 (item, action) 组合成一个输入 token。输出是下一个 item，但只有当用户对这个 item 的 action 是正向的，它才会成为训练 target；否则输出为无定义 ∅：\nRetrieval input: (做饭视频, 点赞) → (旅行视频, 看完) → (篮球视频, 跳过) Retrieval output: 旅行视频 → ∅ → ∅ 这里“旅行视频”的 action 是“看完”，属于正向互动，所以它是第一个输入 token 对应的 next-item target。“篮球视频”被用户跳过，不是正向互动，因此不会成为 Retrieval target，而是被 mask 为 ∅；最后一个位置没有 next item，输出同样为 ∅。Retrieval 学习的是：\np(下一个正向互动的 item | 用户历史) 两项任务都是 sequential transduction，但输出序列不同：Ranking 预测与每个候选 item 对应的 action，Retrieval 预测下一个获得正向反馈的 item。模型只在输出不为 ∅ 的位置计算训练 loss。\n特征：统一的时间序列 工业 DLRM 的输入特征远比“用户看过哪些 item”复杂：\n高频 categorical feature：观看、点赞、跳过、分享、完播等行为； 低频 categorical feature：语言、城市、关注的 creator、加入的 community； numerical feature：CTR、带时间衰减的计数和各种 ratio； 为不同业务与目标手工设计的 feature cross。 GR 把这些特征统一成一条按时间排列的序列：\n首先把用户行为依照时间顺序合并成一个序列。 对于用户属性、关注 creator 这类变化较慢的 feature，只保留每个连续不变区间的第一条记录，再按时间合并到主序列中。 对于 CTR、counter 等频繁变化的 numerical feature，不再使用它们。这些统计特征本来就是从用户的历史行为和 categorical feature 统计而来；只要序列足够长，并配合表达能力足够强的 target-aware sequential model，模型应该能从原始历史中重新学出来。 举个简单的例子。假设用户在北京看完了一个旅行视频，之后关注了 creator“小李”，又跳过了一个做饭视频。DLRM 通常会把这些信息拆成不同的 feature：\n历史 item: [旅行视频, 做饭视频] 历史 action: [看完, 跳过] 城市: 北京 关注的 creator: 小李 最近 2 次完播率: 50% GR 不再把它们作为彼此分离的 feature fields，而是保留原始 categorical event，并按发生时间合并成一条序列。沿用前文的交错表示，可以简化为：\n[城市: 北京] → [旅行视频] → [看完] → [关注 creator: 小李] → [做饭视频] → [跳过] 像“最近 2 次完播率 50%”这样的 numerical feature 不进入序列，因为它本来就可以从历史 event 统计出来。\n从 DLRM 到 GR：不仅模型结构变了，Feature Space 和训练样本的组织方式也一起改变。（论文 Figure 2。）\n这个方法减少 feature engineering，但依靠更长的用户序列和更多 compute。\nHSTU：为推荐系统重新设计的 Attention Block HSTU 全称 Hierarchical Sequential Transduction Unit。它由重复堆叠的 residual block 构成，每层可以简化为三步：\n1. U, V, Q, K = Split(SiLU(Linear(X))) 2. Z = SiLU(QKᵀ + relative bias) · V 3. Y = Linear(LayerNorm(Z) ⊙ U) 这里有两次 SiLU：第一次用于生成 U/V/Q/K，第二次逐点作用于 attention score，取代沿序列维度的 softmax。Relative attention bias 同时编码位置差和时间差；⊙ U 是 element-wise gating，用来完成 feature interaction。\nHSTU 的目标不是把 Transformer 原样搬进推荐系统，而是用一种可重复扩展的 block 替代 DLRM 中异构、专用的模块。（论文 Figure 3。）\n为什么不用普通 Softmax Attention？ 普通 Transformer 会沿 sequence dimension 对 attention score 做 softmax，使每个 query 对历史的权重之和固定为 1。HSTU 没有用Softmax, 有两个原因：\n保留兴趣强度：用户相关历史出现 2 次还是 10 次，本身就是重要信号。Softmax 把 attention weight 归一化为总和为 1 的相对分配，容易弱化证据数量. 适应变化的 vocabulary：推荐内容持续创建和消失，item vocabulary 不断变化。论文的 synthetic streaming experiment 中，HSTU 的 HR@10 为 0.0893，换成 softmax 后是 0.0617。 聚合后必须使用 LayerNorm 稳定训练。换句话说，HSTU 不是简单“删除 softmax”，而是用 pointwise activation + aggregation + post-aggregation normalization 替代它。\n为什么HSTU更高效？ Jagged Sequence：用户历史长度高度不均匀。HSTU 使用 ragged attention kernel，只计算真实 token，不为空白 padding 付费，带来 2x-5x throughput gain。 Stochastic Length（SL）：训练时，大部分长序列只随机保留一个 subsequence，偶尔仍使用完整历史。实验中， α=1.6 时，长度 4,096 的序列大多数时候缩短为 776， 但对模型效果影响甚微。 更少 Activation Memory：HSTU 把 attention 外的 linear layer 从 6 个减少到 2 个，并大量做 operator fusion。论文估算每层 activation state 从 Transformer 的 33d 降到 14d，同样内存空间可堆叠超过 2 倍深度的Layer。 大 Vocabulary 的内存优化：10B vocabulary、512 维 embedding 加 fp32 Adam Optimizer state 理论上需要约 60TB。论文用 row-wise AdamW，并把 optimizer state 放到 DRAM，把每个 embedding float 的 HBM 占用从 12 bytes 降到 2 bytes。 这些工程设计带来的结果是：在 8,192 sequence length 上，HSTU 训练比 FlashAttention-2 Transformer 快 5.3x-15.2x，inference 最多快 5.6x。\nM-FALCON：用一份用户历史为多个候选打分 假设 Ranking 阶段有 m 个候选，所有候选共享一段长度为 n 的用户历史。朴素的 target-aware Ranking 会为每个候选分别运行一次推理，重复计算同一段用户历史。\nM-FALCON（Microbatched-Fast Attention Leveraging Cacheable OperatioNs） 把一组 micro-batch 候选 append 到同一条用户历史序列之后，再修改 attention mask 和 relative position/time bias，让每个候选都能读取用户历史，但不能读取其他候选。这样，一次 forward 就能为整个 micro-batch 打分，并且结果与逐个候选独立打分相同。\nM-FALCON 改变的是执行方式，而不是模型语义：每个候选都能看到用户历史，但候选之间互不可见。（示意图基于论文 Figure 11 和 Algorithm 1。）\n第一个 micro-batch 会生成用户历史的 Key/Value cache；后续 micro-batch 通过 KV Caching 复用它，只计算候选侧的 projection 和 attention。对于一个大小为 bₘ 的 micro-batch，batching 把逐个候选计算 attention 的成本从 O(bₘn²d) 降到 O((n + bₘ)²d)；当 bₘ 相对历史长度 n 较小时，后者近似为 O(n²d)。\n这个优化并不依赖 HSTU，也适用于其他使用 causal self-attention 做 target-aware scoring 的模型。\n实验结果 论文先在 MovieLens 和 Amazon Reviews 上与 SASRec 比较，HSTU 相比 baseline 的 NDCG 最多提升达到 65.8%; 再在 Meta 的 dataset 上做离线实验和线上 A/B Test:\nRetrieval 模型 HR@100 HR@500 线上 E-Task 线上 C-Task DLRM 29.0% 55.5% 0% 0% GR（new source） 36.9% 62.4% +6.2% +5.0% GR（replace source） - - +5.1% +1.9% 数据来自论文 Table 6。New source 表示增加一个 GR retrieval source；replace source 表示替换原来的主 DLRM source。\nRanking 模型 E-Task NE C-Task NE 线上 E-Task 线上 C-Task DLRM 0.4982 0.7842 0% 0% 完整 GR 0.4845 0.7645 +12.4% +4.4% 数据来自论文 Table 7。Normalized Entropy（NE）越低越好。\n最重要的结果：推荐系统也出现了 Scaling Law 论文分别扩大 HSTU 的层数、sequence length、embedding dimension、attention head 和 retrieval negatives。DLRM 在约 200B 参数附近逐渐饱和；GR 则一直扩展到 1.5T 参数。\nGR 的 Ranking 效果随 compute 在三个数量级上持续改善。（论文 Figure 7 bottom。）\n最大实验配置为 8,192 sequence length、1,024 embedding dimension 和 24 层 HSTU。Retrieval 的 HR@100 / HR@500 与 Ranking 的 NE 都呈现近似 power-law trend.\n我的一些想法 从 Meta HSTU 学到什么 Meta HSTU 把多项设计组合起来，才让基于序列的推荐模型能在工业规模下训练和部署。这些方法也可能适用于其他 Generative Recommender：\n把异构 feature 统一成一条序列 把 Retrieval 和 Ranking 重构为 Seq2Seq 模型 使用 Stochastic Length 降低长序列的训练成本 设计更高效的 Attention Layer，例如 HSTU 使用 M-FALCON 并行计算一批候选 item 的 target-aware attention Open Questions HSTU 仍然使用庞大且不断变化的 atomic item ID vocabulary。这些 ID 需要巨大的 embedding table，也需要足够多的用户互动数据才能学到有效表示；对于新 item，这个问题尤其明显。\n许多后来的 Generative Recommender，例如 TIGER、OneRec 和 PLUM，改用 Semantic ID：先从 item content embedding 得到一小段离散 code，再用这些 code 表示 item。更小的 Semantic ID token vocabulary 能降低 embedding memory 压力，并改善 cold start。一个值得探索的方向，是把 HSTU 的长用户历史建模能力与 Semantic ID 结合起来，构建更强、也更容易扩展的推荐系统。\n大方向 这篇论文的重要性，在于它提出了一套实用、有效的方法，让基于序列的 Generative Recommender 真正部署到超大规模生产系统。更重要的是，实验为推荐系统中的 Scaling Law 提供了证据。\n这个结果很令人兴奋：它说明 Generative Recommendation 可能是一条有潜力的路线——通过扩大训练 compute 和模型规模，推荐质量可能获得非常大的提升。\n参考文献 Zhai et al. Actions Speak Louder than Words: Trillion-Parameter Sequential Transducers for Generative Recommendations. ICML 2024。 Kang \u0026 McAuley. Self-Attentive Sequential Recommendation (SASRec). ICDM 2018。 Rajput et al. Recommender Systems with Generative Retrieval (TIGER). NeurIPS 2023。— 我的解读 Deng et al. OneRec: Unifying Retrieve and Rank with Generative Recommender and Preference Alignment. 2025。— 我的解读 He et al. PLUM: Adapting Pre-trained Language Models for Industrial-scale Generative Recommendations. 2025。— 我的解读 #ai #推荐系统 #生成式推荐 #hstu #generativerecommender #dlrm #scalinglaw #meta #人工智能 #ai学习 #大模型\n如果你觉得本文有帮助，欢迎点赞关注支持！\nIf you like this post, consider star the repo.\n",
+  "wordCount" : "941",
+  "inLanguage": "en",
+  "image": "https://sleepingbear-ai.github.io/posts/hstu/fig2-dlrm-vs-gr-features-training.svg","datePublished": "2026-09-20T10:00:00-07:00",
+  "dateModified": "2026-09-20T10:00:00-07:00",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sleepingbear-ai.github.io/posts/hstu/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Welcome to the Blog of SleepingBear",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://sleepingbear-ai.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://sleepingbear-ai.github.io/" accesskey="h" title="Welcome to the Blog of SleepingBear (Alt + H)">Welcome to the Blog of SleepingBear</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      Meta HSTU 解释和思考：如何把推荐系统做大
+    </h1>
+    <div class="post-meta">
+
+<span title='2026-09-20 10:00:00 -0700 PDT'>September 20, 2026</span>
+
+</div>
+  </header> 
+  <div class="post-content md-content"><p><em>Meta HSTU 把推荐系统中的 Retrieval和 Ranking 重构为用户序列预测问题， 统一模型特征为一个用户序列，并用高效设计的HSTU Attention Block、Stochastic Length 和 M-FALCON 大幅降低训练与推理成本。最终，1.5 万亿参数的大推荐系统模型在A/B Test 中最高提升 12.4%，并呈现跨三个数量级的 Compute Scaling Law。</em></p>
+<p>论文：<strong><a href="https://arxiv.org/abs/2402.17152">Actions Speak Louder than Words: Trillion-Parameter Sequential Transducers for Generative Recommendations</a></strong>（Zhai et al., Meta, ICML 2024）</p>
+<p>代码：<strong><a href="https://github.com/meta-recsys/generative-recommenders">meta-recsys/generative-recommenders</a></strong></p>
+<hr>
+<h2 id="tldr">TL;DR<a hidden class="anchor" aria-hidden="true" href="#tldr">#</a></h2>
+<p>传统工业推荐中的 <strong>Deep Learning Recommendation Model（DLRM）</strong> 依赖大量人工构造的 categorical, numerical features 和复杂的 feature interaction module。但scale up 模型时效果不一定有突破。</p>
+<p>这篇论文提出 <strong>Generative Recommender（GR）</strong>：把 item、用户 action 和其他 categorical feature 按时间合并成一条序列，再把 Retrieval 与 Ranking 都重构成序列预测问题。这里的“生成式”不是生成文字或视频，而是<strong>对用户行为序列建模，并预测序列中下一个 item 或 action</strong>。</p>
+<p>整套系统的关键：</p>
+<ol>
+<li><strong>统一 Feature Space</strong>：把异构 categorical feature sequentialize；让模型从原始用户序列中学习原本由 counter、ratio 表达的统计特征。</li>
+<li><strong>HSTU Encoder</strong>：设计高效的Attention Block，并针对 jagged、超长推荐序列优化内存和 kernel。</li>
+<li><strong>M-FALCON Serving</strong>：把大量候选 item 分成 micro-batch，复用用户历史的计算和 KV cache，让复杂的 target-aware 模型能高效实现。</li>
+</ol>
+<p>结果很亮眼：最大模型达到 <strong>1.5T 参数</strong>；生产系统 A/B Test 的两个主要指标提升 <strong>12.4% / 4.4%</strong>；用户序列长度 8,192 时，HSTU 训练速度比基于 FlashAttention-2 的 Transformer 快 <strong>5.3x-15.2x</strong>。更重要的是，GR 的效果随训练 compute 在三个数量级上近似 power law 增长。</p>
+<h2 id="把-retrieval-和-ranking-重构为-seq2seq-预测问题">把 Retrieval 和 Ranking 重构为 Seq2Seq 预测问题<a hidden class="anchor" aria-hidden="true" href="#把-retrieval-和-ranking-重构为-seq2seq-预测问题">#</a></h2>
+<p>这篇论文把推荐写成 <strong>sequence-to-sequence（Seq2Seq）预测问题</strong>，但 Retrieval 和 Ranking 使用不同的 input/output sequence。</p>
+<p>用一个最简单的例子说明。假设用户依次看了做饭、旅行和篮球三个视频，对应的 action 分别是点赞、看完和跳过。完整序列是：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>做饭视频 → 点赞 → 旅行视频 → 看完 → 篮球视频 → 跳过
+</span></span></code></pre></div><p>对于 <strong>Ranking</strong>，输入是 item 与 action 交错的序列；模型在每个 item 的位置预测用户对它采取的 action：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Ranking input:   做饭视频 → 点赞 → 旅行视频 → 看完 → 篮球视频 → 跳过
+</span></span><span style="display:flex;"><span>Ranking output:  点赞     →  ∅   → 看完     →  ∅   → 跳过     →  ∅
+</span></span></code></pre></div><p>例如，对候选“篮球视频”，模型预测用户会“跳过”。</p>
+<p>Ranking 学习的是：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>p(action | 用户历史, candidate item)
+</span></span></code></pre></div><p>对于 <strong>Retrieval</strong>，论文把每个 <code>(item, action)</code> 组合成一个输入 token。输出是下一个 item，但只有当用户对这个 item 的 action 是正向的，它才会成为训练 target；否则输出为无定义 <code>∅</code>：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Retrieval input:   (做饭视频, 点赞) → (旅行视频, 看完) → (篮球视频, 跳过)
+</span></span><span style="display:flex;"><span>Retrieval output:   旅行视频         →  ∅               →  ∅
+</span></span></code></pre></div><p>这里“旅行视频”的 action 是“看完”，属于正向互动，所以它是第一个输入 token 对应的 next-item target。“篮球视频”被用户跳过，不是正向互动，因此不会成为 Retrieval target，而是被 mask 为 <code>∅</code>；最后一个位置没有 next item，输出同样为 <code>∅</code>。Retrieval 学习的是：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>p(下一个正向互动的 item | 用户历史)
+</span></span></code></pre></div><p>两项任务都是 sequential transduction，但输出序列不同：Ranking 预测与每个候选 item 对应的 action，Retrieval 预测下一个获得正向反馈的 item。模型只在输出不为 <code>∅</code> 的位置计算训练 loss。</p>
+<h2 id="特征统一的时间序列">特征：统一的时间序列<a hidden class="anchor" aria-hidden="true" href="#特征统一的时间序列">#</a></h2>
+<p>工业 DLRM 的输入特征远比“用户看过哪些 item”复杂：</p>
+<ul>
+<li>高频 categorical feature：观看、点赞、跳过、分享、完播等行为；</li>
+<li>低频 categorical feature：语言、城市、关注的 creator、加入的 community；</li>
+<li>numerical feature：CTR、带时间衰减的计数和各种 ratio；</li>
+<li>为不同业务与目标手工设计的 feature cross。</li>
+</ul>
+<p>GR 把这些特征统一成一条按时间排列的序列：</p>
+<ul>
+<li>首先把用户行为依照时间顺序合并成一个序列。</li>
+<li>对于用户属性、关注 creator 这类变化较慢的 feature，只保留每个连续不变区间的第一条记录，再按时间合并到主序列中。</li>
+<li>对于 CTR、counter 等频繁变化的 numerical feature，<strong>不再使用它们</strong>。这些统计特征本来就是从用户的历史行为和 categorical feature 统计而来；只要序列足够长，并配合表达能力足够强的 target-aware sequential model，模型应该能从原始历史中重新学出来。</li>
+</ul>
+<p>举个简单的例子。假设用户在北京看完了一个旅行视频，之后关注了 creator“小李”，又跳过了一个做饭视频。DLRM 通常会把这些信息拆成不同的 feature：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>历史 item:       [旅行视频, 做饭视频]
+</span></span><span style="display:flex;"><span>历史 action:     [看完, 跳过]
+</span></span><span style="display:flex;"><span>城市:            北京
+</span></span><span style="display:flex;"><span>关注的 creator:  小李
+</span></span><span style="display:flex;"><span>最近 2 次完播率:  50%
+</span></span></code></pre></div><p>GR 不再把它们作为彼此分离的 feature fields，而是保留原始 categorical event，并按发生时间合并成一条序列。沿用前文的交错表示，可以简化为：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>[城市: 北京] → [旅行视频] → [看完] → [关注 creator: 小李] → [做饭视频] → [跳过]
+</span></span></code></pre></div><p>像“最近 2 次完播率 50%”这样的 numerical feature 不进入序列，因为它本来就可以从历史 event 统计出来。</p>
+<p><img alt="论文 Figure 2：DLRM 为每个 impression 重复抽取大量异构特征；GR 把 categorical feature 合并成统一时间序列，并按用户或 session 生成训练样本。" loading="lazy" src="/posts/hstu/fig2-dlrm-vs-gr-features-training.svg"></p>
+<p><em>从 DLRM 到 GR：不仅模型结构变了，Feature Space 和训练样本的组织方式也一起改变。（<a href="https://arxiv.org/abs/2402.17152">论文</a> Figure 2。）</em></p>
+<p>这个方法减少 feature engineering，但依靠更长的用户序列和更多 compute。</p>
+<h2 id="hstu为推荐系统重新设计的-attention-block">HSTU：为推荐系统重新设计的 Attention Block<a hidden class="anchor" aria-hidden="true" href="#hstu为推荐系统重新设计的-attention-block">#</a></h2>
+<p>HSTU 全称 <strong>Hierarchical Sequential Transduction Unit</strong>。它由重复堆叠的 residual block 构成，每层可以简化为三步：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>1. U, V, Q, K = Split(SiLU(Linear(X)))
+</span></span><span style="display:flex;"><span>2. Z = SiLU(QKᵀ + relative bias) · V
+</span></span><span style="display:flex;"><span>3. Y = Linear(LayerNorm(Z) ⊙ U)
+</span></span></code></pre></div><p>这里有两次 SiLU：第一次用于生成 <code>U/V/Q/K</code>，第二次逐点作用于 attention score，取代沿序列维度的 softmax。Relative attention bias 同时编码位置差和时间差；<code>⊙ U</code> 是 element-wise gating，用来完成 feature interaction。</p>
+<p><img alt="论文 Figure 3：传统 DLRM 由 Embedding、Feature Interaction、MoE 和多个 MLP 组成；HSTU 用重复堆叠的统一模块完成相似工作。" loading="lazy" src="/posts/hstu/fig3-dlrm-vs-hstu.svg"></p>
+<p><em>HSTU 的目标不是把 Transformer 原样搬进推荐系统，而是用一种可重复扩展的 block 替代 DLRM 中异构、专用的模块。（<a href="https://arxiv.org/abs/2402.17152">论文</a> Figure 3。）</em></p>
+<h3 id="为什么不用普通-softmax-attention">为什么不用普通 Softmax Attention？<a hidden class="anchor" aria-hidden="true" href="#为什么不用普通-softmax-attention">#</a></h3>
+<p>普通 Transformer 会沿 sequence dimension 对 attention score 做 softmax，使每个 query 对历史的权重之和固定为 1。HSTU 没有用Softmax, 有两个原因：</p>
+<ul>
+<li><strong>保留兴趣强度</strong>：用户相关历史出现 2 次还是 10 次，本身就是重要信号。Softmax 把 attention weight 归一化为总和为 1 的相对分配，容易弱化证据数量.</li>
+<li><strong>适应变化的 vocabulary</strong>：推荐内容持续创建和消失，item vocabulary 不断变化。论文的 synthetic streaming experiment 中，HSTU 的 HR@10 为 <code>0.0893</code>，换成 softmax 后是 <code>0.0617</code>。</li>
+</ul>
+<p>聚合后必须使用 LayerNorm 稳定训练。换句话说，HSTU 不是简单“删除 softmax”，而是用 <strong>pointwise activation + aggregation + post-aggregation normalization</strong> 替代它。</p>
+<h3 id="为什么hstu更高效">为什么HSTU更高效？<a hidden class="anchor" aria-hidden="true" href="#为什么hstu更高效">#</a></h3>
+<ul>
+<li><strong>Jagged Sequence</strong>：用户历史长度高度不均匀。HSTU 使用 ragged attention kernel，只计算真实 token，不为空白 padding 付费，带来 <code>2x-5x</code> throughput gain。</li>
+<li><strong>Stochastic Length（SL）</strong>：训练时，大部分长序列只随机保留一个 subsequence，偶尔仍使用完整历史。实验中， <code>α=1.6</code> 时，长度 4,096 的序列大多数时候缩短为 776， 但对模型效果影响甚微。</li>
+<li><strong>更少 Activation Memory</strong>：HSTU 把 attention 外的 linear layer 从 6 个减少到 2 个，并大量做 operator fusion。论文估算每层 activation state 从 Transformer 的 <code>33d</code> 降到 <code>14d</code>，同样内存空间可堆叠超过 2 倍深度的Layer。</li>
+<li><strong>大 Vocabulary 的内存优化</strong>：10B vocabulary、512 维 embedding 加 fp32 Adam Optimizer state 理论上需要约 60TB。论文用 row-wise AdamW，并把 optimizer state 放到 DRAM，把每个 embedding float 的 HBM 占用从 12 bytes 降到 2 bytes。</li>
+</ul>
+<p>这些工程设计带来的结果是：在 8,192 sequence length 上，HSTU 训练比 FlashAttention-2 Transformer 快 <code>5.3x-15.2x</code>，inference 最多快 <code>5.6x</code>。</p>
+<h2 id="m-falcon用一份用户历史为多个候选打分">M-FALCON：用一份用户历史为多个候选打分<a hidden class="anchor" aria-hidden="true" href="#m-falcon用一份用户历史为多个候选打分">#</a></h2>
+<p>假设 Ranking 阶段有 <code>m</code> 个候选，所有候选共享一段长度为 <code>n</code> 的用户历史。朴素的 target-aware Ranking 会为每个候选分别运行一次推理，重复计算同一段用户历史。</p>
+<p><strong>M-FALCON（Microbatched-Fast Attention Leveraging Cacheable OperatioNs）</strong> 把一组 micro-batch 候选 append 到同一条用户历史序列之后，再修改 attention mask 和 relative position/time bias，让每个候选都能读取用户历史，但不能读取其他候选。这样，一次 forward 就能为整个 micro-batch 打分，并且结果与逐个候选独立打分相同。</p>
+<p><img alt="朴素的 target-aware Ranking 为每个候选重复计算相同的用户历史；M-FALCON 把一组彼此 masked 的候选 append 到共享历史之后，复用历史 KV，并行产生相互独立的分数。" loading="lazy" src="/posts/hstu/m-falcon.svg"></p>
+<p><em>M-FALCON 改变的是执行方式，而不是模型语义：每个候选都能看到用户历史，但候选之间互不可见。（示意图基于<a href="https://arxiv.org/abs/2402.17152">论文</a> Figure 11 和 Algorithm 1。）</em></p>
+<p>第一个 micro-batch 会生成用户历史的 Key/Value cache；后续 micro-batch 通过 KV Caching 复用它，只计算候选侧的 projection 和 attention。对于一个大小为 <code>bₘ</code> 的 micro-batch，batching 把逐个候选计算 attention 的成本从 <code>O(bₘn²d)</code> 降到 <code>O((n + bₘ)²d)</code>；当 <code>bₘ</code> 相对历史长度 <code>n</code> 较小时，后者近似为 <code>O(n²d)</code>。</p>
+<p>这个优化并不依赖 HSTU，也适用于其他使用 causal self-attention 做 target-aware scoring 的模型。</p>
+<h2 id="实验结果">实验结果<a hidden class="anchor" aria-hidden="true" href="#实验结果">#</a></h2>
+<p>论文先在 MovieLens 和 Amazon Reviews 上与 SASRec 比较，HSTU 相比 baseline 的 NDCG 最多提升达到 <strong>65.8%</strong>; 再在 Meta 的 dataset 上做离线实验和线上 A/B Test:</p>
+<h3 id="retrieval">Retrieval<a hidden class="anchor" aria-hidden="true" href="#retrieval">#</a></h3>
+<table>
+	<thead>
+			<tr>
+					<th style="text-align: left">模型</th>
+					<th style="text-align: right">HR@100</th>
+					<th style="text-align: right">HR@500</th>
+					<th style="text-align: right">线上 E-Task</th>
+					<th style="text-align: right">线上 C-Task</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: left">DLRM</td>
+					<td style="text-align: right">29.0%</td>
+					<td style="text-align: right">55.5%</td>
+					<td style="text-align: right">0%</td>
+					<td style="text-align: right">0%</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">GR（new source）</td>
+					<td style="text-align: right"><strong>36.9%</strong></td>
+					<td style="text-align: right"><strong>62.4%</strong></td>
+					<td style="text-align: right"><strong>+6.2%</strong></td>
+					<td style="text-align: right"><strong>+5.0%</strong></td>
+			</tr>
+			<tr>
+					<td style="text-align: left">GR（replace source）</td>
+					<td style="text-align: right">-</td>
+					<td style="text-align: right">-</td>
+					<td style="text-align: right"><strong>+5.1%</strong></td>
+					<td style="text-align: right"><strong>+1.9%</strong></td>
+			</tr>
+	</tbody>
+</table>
+<p><em>数据来自<a href="https://arxiv.org/abs/2402.17152">论文</a> Table 6。New source 表示增加一个 GR retrieval source；replace source 表示替换原来的主 DLRM source。</em></p>
+<h3 id="ranking">Ranking<a hidden class="anchor" aria-hidden="true" href="#ranking">#</a></h3>
+<table>
+	<thead>
+			<tr>
+					<th style="text-align: left">模型</th>
+					<th style="text-align: right">E-Task NE</th>
+					<th style="text-align: right">C-Task NE</th>
+					<th style="text-align: right">线上 E-Task</th>
+					<th style="text-align: right">线上 C-Task</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: left">DLRM</td>
+					<td style="text-align: right">0.4982</td>
+					<td style="text-align: right">0.7842</td>
+					<td style="text-align: right">0%</td>
+					<td style="text-align: right">0%</td>
+			</tr>
+			<tr>
+					<td style="text-align: left"><strong>完整 GR</strong></td>
+					<td style="text-align: right"><strong>0.4845</strong></td>
+					<td style="text-align: right"><strong>0.7645</strong></td>
+					<td style="text-align: right"><strong>+12.4%</strong></td>
+					<td style="text-align: right"><strong>+4.4%</strong></td>
+			</tr>
+	</tbody>
+</table>
+<p><em>数据来自<a href="https://arxiv.org/abs/2402.17152">论文</a> Table 7。Normalized Entropy（NE）越低越好。</em></p>
+<h2 id="最重要的结果推荐系统也出现了-scaling-law">最重要的结果：推荐系统也出现了 Scaling Law<a hidden class="anchor" aria-hidden="true" href="#最重要的结果推荐系统也出现了-scaling-law">#</a></h2>
+<p>论文分别扩大 HSTU 的层数、sequence length、embedding dimension、attention head 和 retrieval negatives。DLRM 在约 <strong>200B 参数</strong>附近逐渐饱和；GR 则一直扩展到 <strong>1.5T 参数</strong>。</p>
+<p><img alt="论文 Figure 7（Ranking 部分）：随着训练 compute 增加，DLRM 的 Normalized Entropy 很快进入平台期，GR 则继续沿 power-law trend 改善。NE 越低越好。" loading="lazy" src="/posts/hstu/fig7-ranking-scaling.svg"></p>
+<p><em>GR 的 Ranking 效果随 compute 在三个数量级上持续改善。（<a href="https://arxiv.org/abs/2402.17152">论文</a> Figure 7 bottom。）</em></p>
+<p>最大实验配置为 8,192 sequence length、1,024 embedding dimension 和 24 层 HSTU。Retrieval 的 HR@100 / HR@500 与 Ranking 的 NE 都呈现近似 power-law trend.</p>
+<h2 id="我的一些想法">我的一些想法<a hidden class="anchor" aria-hidden="true" href="#我的一些想法">#</a></h2>
+<h3 id="从-meta-hstu-学到什么">从 Meta HSTU 学到什么<a hidden class="anchor" aria-hidden="true" href="#从-meta-hstu-学到什么">#</a></h3>
+<p>Meta HSTU 把多项设计组合起来，才让基于序列的推荐模型能在工业规模下训练和部署。这些方法也可能适用于其他 Generative Recommender：</p>
+<ul>
+<li><strong>把异构 feature 统一成一条序列</strong></li>
+<li><strong>把 Retrieval 和 Ranking 重构为 Seq2Seq 模型</strong></li>
+<li><strong>使用 Stochastic Length 降低长序列的训练成本</strong></li>
+<li><strong>设计更高效的 Attention Layer，例如 HSTU</strong></li>
+<li><strong>使用 M-FALCON 并行计算一批候选 item 的 target-aware attention</strong></li>
+</ul>
+<h3 id="open-questions">Open Questions<a hidden class="anchor" aria-hidden="true" href="#open-questions">#</a></h3>
+<p>HSTU 仍然使用庞大且不断变化的 atomic item ID vocabulary。这些 ID 需要巨大的 embedding table，也需要足够多的用户互动数据才能学到有效表示；对于新 item，这个问题尤其明显。</p>
+<p>许多后来的 Generative Recommender，例如 <a href="../tiger-generative-retrieval/">TIGER</a>、<a href="../onerec/">OneRec</a> 和 <a href="../plum/">PLUM</a>，改用 <strong>Semantic ID</strong>：先从 item content embedding 得到一小段离散 code，再用这些 code 表示 item。更小的 Semantic ID token vocabulary 能降低 embedding memory 压力，并改善 cold start。一个值得探索的方向，是把 HSTU 的长用户历史建模能力与 Semantic ID 结合起来，构建更强、也更容易扩展的推荐系统。</p>
+<h3 id="大方向">大方向<a hidden class="anchor" aria-hidden="true" href="#大方向">#</a></h3>
+<p>这篇论文的重要性，在于它提出了一套实用、有效的方法，让基于序列的 Generative Recommender 真正部署到超大规模生产系统。更重要的是，实验为推荐系统中的 <strong>Scaling Law</strong> 提供了证据。</p>
+<p>这个结果很令人兴奋：它说明 Generative Recommendation 可能是一条有潜力的路线——通过扩大训练 compute 和模型规模，推荐质量可能获得非常大的提升。</p>
+<h2 id="参考文献">参考文献<a hidden class="anchor" aria-hidden="true" href="#参考文献">#</a></h2>
+<ol>
+<li>Zhai et al. <strong><a href="https://arxiv.org/abs/2402.17152">Actions Speak Louder than Words: Trillion-Parameter Sequential Transducers for Generative Recommendations</a></strong>. ICML 2024。</li>
+<li>Kang &amp; McAuley. <strong><a href="https://arxiv.org/abs/1808.09781">Self-Attentive Sequential Recommendation (SASRec)</a></strong>. ICDM 2018。</li>
+<li>Rajput et al. <strong><a href="https://arxiv.org/abs/2305.05065">Recommender Systems with Generative Retrieval (TIGER)</a></strong>. NeurIPS 2023。— <a href="../tiger-generative-retrieval/">我的解读</a></li>
+<li>Deng et al. <strong><a href="https://arxiv.org/abs/2502.18965">OneRec: Unifying Retrieve and Rank with Generative Recommender and Preference Alignment</a></strong>. 2025。— <a href="../onerec/">我的解读</a></li>
+<li>He et al. <strong><a href="https://arxiv.org/abs/2510.07784">PLUM: Adapting Pre-trained Language Models for Industrial-scale Generative Recommendations</a></strong>. 2025。— <a href="../plum/">我的解读</a></li>
+</ol>
+<hr>
+<p>#ai #推荐系统 #生成式推荐 #hstu #generativerecommender #dlrm #scalinglaw #meta #人工智能 #ai学习 #大模型</p>
+<p>如果你觉得本文有帮助，欢迎<a href="https://www.rednote.com/user/profile/61d67d89000000001000c76b">点赞关注</a>支持！</p>
+<p>If you like this post, consider star <a href="https://github.com/sleepingbear-ai/sleepingbear-ai.github.io">the repo</a>.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://sleepingbear-ai.github.io/tags/ai/">Ai</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/">推荐系统</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/%E7%94%9F%E6%88%90%E5%BC%8F%E6%8E%A8%E8%8D%90/">生成式推荐</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/hstu/">Hstu</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/generativerecommender/">Generativerecommender</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/dlrm/">Dlrm</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/scalinglaw/">Scalinglaw</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/meta/">Meta</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/">人工智能</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/ai%E5%AD%A6%E4%B9%A0/">Ai学习</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/">大模型</a></li>
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://sleepingbear-ai.github.io/">Welcome to the Blog of SleepingBear</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    window.onscroll = function () {
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
+        } else {
+            toplink.classList.add("hidden");
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
