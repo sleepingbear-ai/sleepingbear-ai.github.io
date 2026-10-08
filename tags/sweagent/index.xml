@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Sweagent on Welcome to the Blog of SleepingBear</title>
+    <link>https://sleepingbear-ai.github.io/tags/sweagent/</link>
+    <description>Recent content in Sweagent on Welcome to the Blog of SleepingBear</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 25 Aug 2026 10:00:00 -0700</lastBuildDate>
+    <atom:link href="https://sleepingbear-ai.github.io/tags/sweagent/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>SWE-agent 解释和思考：如何有效设计 Coding Agent</title>
+      <link>https://sleepingbear-ai.github.io/posts/swe_agent/</link>
+      <pubDate>Tue, 25 Aug 2026 10:00:00 -0700</pubDate>
+      <guid>https://sleepingbear-ai.github.io/posts/swe_agent/</guid>
+      <description>&lt;em&gt;SWE-agent（Princeton University）是 Coding Agent 领域的经典论文。它提出 Agent-Computer Interface（ACI），解释了为什么工具设计、context management 和 guardrails 会直接影响 Agent 的能力，并在不改变底层 LLM 的情况下，把 SWE-bench Lite 的问题解决率从 11.0% 提升到 18.0%。&lt;/em&gt;</description>
+    </item>
+  </channel>
+</rss>

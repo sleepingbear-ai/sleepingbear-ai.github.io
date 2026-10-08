@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>TokenMinds 解释和思考：面向 YouTube 推荐的 LLM 用户建模 | Welcome to the Blog of SleepingBear</title>
+<meta name="keywords" content="ai, 推荐系统, 生成式推荐, 用户建模, tokenminds, semanticid, llm, gemini, youtube, 人工智能, ai学习, 大模型">
+<meta name="description" content="TokenMinds（Google DeepMind &amp; YouTube）用一个基于 Gemini LLM 的 encoder-decoder 同时生成 user embedding 和 40 个离散 user token，把长视频与短视频的用户建模统一到一个模型里，并通过异步生成和 Cache 服务数十亿用户。它把 YouTube PLUM 的生成式推荐框架从召回推进到了 user modeling。">
+<meta name="author" content="">
+<link rel="canonical" href="https://sleepingbear-ai.github.io/posts/tokenminds/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.cd9298b33628769aa1bc1acebbbfd7aa11ce81dfe03484d479e1907760249a1d.css" integrity="sha256-zZKYszYodpqhvBrOu7/XqhHOgd/gNITUeeGQd2Akmh0=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://sleepingbear-ai.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://sleepingbear-ai.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://sleepingbear-ai.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://sleepingbear-ai.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://sleepingbear-ai.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://sleepingbear-ai.github.io/posts/tokenminds/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://sleepingbear-ai.github.io/posts/tokenminds/">
+  <meta property="og:site_name" content="Welcome to the Blog of SleepingBear">
+  <meta property="og:title" content="TokenMinds 解释和思考：面向 YouTube 推荐的 LLM 用户建模">
+  <meta property="og:description" content="TokenMinds（Google DeepMind &amp; YouTube）用一个基于 Gemini LLM 的 encoder-decoder 同时生成 user embedding 和 40 个离散 user token，把长视频与短视频的用户建模统一到一个模型里，并通过异步生成和 Cache 服务数十亿用户。它把 YouTube PLUM 的生成式推荐框架从召回推进到了 user modeling。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-08-14T10:00:00-07:00">
+    <meta property="article:modified_time" content="2026-08-14T10:00:00-07:00">
+    <meta property="article:tag" content="Ai">
+    <meta property="article:tag" content="推荐系统">
+    <meta property="article:tag" content="生成式推荐">
+    <meta property="article:tag" content="用户建模">
+    <meta property="article:tag" content="Tokenminds">
+    <meta property="article:tag" content="Semanticid">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="TokenMinds 解释和思考：面向 YouTube 推荐的 LLM 用户建模">
+  <meta name="twitter:description" content="TokenMinds（Google DeepMind &amp; YouTube）用一个基于 Gemini LLM 的 encoder-decoder 同时生成 user embedding 和 40 个离散 user token，把长视频与短视频的用户建模统一到一个模型里，并通过异步生成和 Cache 服务数十亿用户。它把 YouTube PLUM 的生成式推荐框架从召回推进到了 user modeling。">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://sleepingbear-ai.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "TokenMinds 解释和思考：面向 YouTube 推荐的 LLM 用户建模",
+      "item": "https://sleepingbear-ai.github.io/posts/tokenminds/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "TokenMinds 解释和思考：面向 YouTube 推荐的 LLM 用户建模",
+  "name": "TokenMinds 解释和思考：面向 YouTube 推荐的 LLM 用户建模",
+  "description": "TokenMinds（Google DeepMind \u0026amp; YouTube）用一个基于 Gemini LLM 的 encoder-decoder 同时生成 user embedding 和 40 个离散 user token，把长视频与短视频的用户建模统一到一个模型里，并通过异步生成和 Cache 服务数十亿用户。它把 YouTube PLUM 的生成式推荐框架从召回推进到了 user modeling。",
+  "keywords": [
+    "ai", "推荐系统", "生成式推荐", "用户建模", "tokenminds", "semanticid", "llm", "gemini", "youtube", "人工智能", "ai学习", "大模型"
+  ],
+  "articleBody": "TokenMinds（Google DeepMind \u0026 YouTube）用一个基于 Gemini LLM 的 encoder-decoder 同时生成 user embedding 和 40 个离散 user token，把长视频与短视频的用户建模统一到一个模型里，并通过异步生成和 Cache 服务数十亿用户。它把 YouTube PLUM 的生成式推荐框架从召回推进到了 user modeling。\n论文：TokenMinds: Pretrained User Tokens and Embeddings for User Understanding in Large Recommender Systems（Liu et al., Google DeepMind \u0026 YouTube, 2026 年 6 月）\nTL;DR 生成式推荐先给每个 item 分配一个 Semantic ID（SID），再用自回归模型把推荐变成 Next SID Prediction。TIGER 开创了这个方向，PLUM 则把 Gemini LLM 改造成了 YouTube 的线上生成式召回模型。\nTokenMinds 问了一个很自然的问题：既然视频可以有 Semantic ID，用户能不能也用 Semantic ID 表示？\n它的答案是一个已经部署于 YouTube 全量推荐流量的 LLM 用户建模系统：\nUser Modeling 双重输出：模型是一个从 PLUM 预训练 LLM warm-start 的 encoder-decoder，负责读取用户行为。Encoder 生成一个 1,152 维 dense user embedding；decoder 用 beam search 生成 40 个基于 SID 的 user token。两者都作为特征交给下游排序模型。 一个模型统一两个场景：用 / token 区分长视频（Long-Form Video）和短视频（Short-Form Video）场景，只做一次共享 encoder inference，再分别 decode 两组 user token，节省 50% 训练算力和 31% serving 算力。 异步服务：每 24 小时离线更新一次用户表示并写入 cache。线上每秒读取 144 万次，cache hit rate 达到 96.4%；cache miss 时再异步触发生成。 线上结果：在 YouTube 短视频推荐场景中，单独加入 embedding 带来 +0.05% 满意互动，单独加入 token 是 +0.40%，两者一起则达到 +0.62%。这说明在 user modeling 中，user token 和 user embedding 不是重复的表示，而是可以互补。\nUser Modeling：如何表示一个用户？ 用户建模（User Modeling）是推荐系统的基础模块：\n输入：用户看过的长视频和短视频、搜索词、点赞和点踩、观看时长等行为序列。 输出：一个能被下游召回或排序模型使用的用户表示。 传统方法通常把用户行为序列压缩成一个 dense user embedding。这种表示简单好用，但有一个结构上的上限：一个用户的多种兴趣，最终都挤进一个固定长度的向量。\n另一种近年出现的方法是让 LLM 生成文字版用户画像，比如“喜欢烹饪节目和赛车”。但论文认为，这类画像更容易捕捉话题共现，却不擅长理解行为序列中的动态变化；同时，文字和视频之间仍然存在 modality gap。\nTokenMinds 的 user token 是视频 SID 的前缀：用户的“下一类兴趣”和视频使用同一种语言表示。（本图专为本文绘制，基于论文第 1、2 节。）\nTokenMinds 的核心想法：直接用已经在使用的视频 SID vocabulary 来表示用户。一个 user token 就是一个视频 SID prefix，每个用户由 40 个这样的 user token 表示。因此，用户兴趣和候选视频天然处在同一个语义空间里，并继承了 SID 的层级语义（hierarchical semantic meaning）。\n更重要的是，它没有试图用 token 完全取代 user embedding，而是同时输出两者作为用户表示。\n方法详解 TokenMinds 沿用了 PLUM 的基础模块：同一个基于多模态视频 content embedding 的 RQ-VAE tokenizer，以及教会 Gemini LLM 理解 video SID 的 Continued Pre-Training（CPT）。如果你对这部分不熟悉，可以看我的 PLUM 解读；RQ-VAE 的细节则在 TIGER 解读 里。\nTokenMinds 整体架构。（论文 Figure 1，Liu et al., 2026。）\n输入：不只是普通的用户观看历史 TokenMinds 的输入比普通的 user watch-history 丰富：\n跨场景观看行为：长视频（LFV）和短视频（SFV）来自多个推荐入口（homepage recommendations、watch-next suggestions），按时间顺序交错排列。 搜索查询：显式表达用户意图。因为 CPT 已经把文本 token 和 SID 放进同一个 vocabulary，用户的最近 10 条搜索可以直接用 token 加入序列。 互动信号：每次观看的时长、观看比例、点赞、点踩、设备和时间戳。 每次观看被压缩成一个很短的固定 token 序列：\n+ 4 个 SID token + 1 个 soft token\n前两部分表示视频场景和 SID；剩下的非 SID 特征先各自 embedding 后拼接，再经过 MLP 投影成一个 soft token。\n模型架构：为什么用 encoder-decoder？ 这个架构有两个直接好处：\nEncoder 更适合读完整历史：双向 attention 能更全面地捕捉长序列模式，对 encoder state 做 pooling 就能得到 user embedding。 Serving 时可以拆开：encoder 很重，负责压缩最多 1,200 次视频观看构成的、变化较慢的长期用户历史；decoder 更轻，负责反映近期兴趣。两者分开后，可以低频更新 encoder、高频更新 decoder。 模型训练：不只预测“下一个视频” 给定一段用户历史，模型会生成一组 SID prefix，表示用户在接下来一段时间内可能观看的视频。\nEncoder 读用户历史，decoder 一次生成未来 24 小时内多个观看目标的 SID。（论文 Figure 2，Liu et al., 2026。）\nTokenMinds 模型的 Loss Function（论文 Equation 1，本图专为本文标注）。\n这个 Loss Function 本质上是经典的 Next Token Prediction（NTP）loss，只是扩展为一次预测多个目标。训练样本按 engagement reward 加权采样，采样后在 loss 中等权处理。\n模型训练里的三个设计是整个方法的核心：\nLook-ahead sampling：不只预测紧接着的下一次观看，而是从未来 24 小时的观看里随机抽最多 N=15 个目标。这是因为用户模型应该表示一段时间内的多种兴趣，而不是过拟合某一次偶然点击。 SID truncation：视频的完整 SID 有 8 层，训练和输入编码只保留前 4 层。一个短前缀代表视频库里的一个语义区域，而不是某一个具体视频，所以更能表达“兴趣”，也减少记忆训练 item 的倾向。 一次预测多个目标：相比每个样本只预测一个目标，训练的 sample efficiency 更高。 Cross-scenario：一个模型同时理解长视频和短视频 长视频和短视频的消费方式明显不同，工业系统通常为它们训练两个用户模型。但论文指出：接近一半用户会同时使用两种形式，而且两者 SID 前两层的 vocabulary 有约 40% 重叠。用户兴趣并不会按视频形式彻底分开。\nTokenMinds 只需在每次观看前加一个 condition token（ 或 ），就能把两类行为按时间统一成一个用户行为序列，再输入同一个模型。用户的搜索查询也以同样的方式加入序列，并以 作为前缀。Condition token 不参与 loss calculation——预测它们太简单，反而会降低模型质量。\nServing 时，统一模型仍然需要分别输出 LFV 和 SFV 场景的 user token。一个朴素的方法是 Separate Per-Context Inference：分别为 LFV 和 SFV 运行一次 inference——这会让 encoder 重复计算两次：\nMulti-context decoding：一次 encode，按场景并行 decode。（论文 Figure 3，Liu et al., 2026。）\nTokenMinds 提出了一种巧妙的 multi-context decoding 方案：用户历史只 encode 一次，然后按场景将 decoding 分支为并行的 sub-batch，每个场景一个，并且全部共享相同的 encoder hidden states。结果是 serving inference 从 698 块芯片降到 481 块，节省 31%。训练算力也减半，因为一个统一模型替代了两个独立模型。\n下游模型怎么使用 user token？ User modeling 输出的用户表示会被下游排序和召回模型使用。TokenMinds 同时输出 user embedding 和 user token——embedding 总结用户看过什么，token 则预测用户接下来会看什么。下游模型该如何把 user token 作为特征使用？\n论文测试了三种 token-to-embedding 方法：\nPrefix Embedding Mapping（EM）：把每个 user token（SID prefix）映射回所有共享该 prefix 的视频对应的原始 content embedding（这些 embedding 正是生成视频 SID 时的输入），然后取均值（mean）。 N-gram Embedding：把 user token（SID prefix）切成固定长度的 sub-word，为每个 sub-word 学习一个 embedding，再把它们相加。 SPM Embedding：与方法 2 相同，但使用 SentencePiece 学习可变长度的 sub-word。 方法 2 和 3 统称 Learnable Embeddings（LE）——它们使用随机初始化的 embedding table，并与下游模型一起端到端训练。用户的 40 个 token 都以这种方式转换成 embedding，然后 pooling 成一个 user vector。短视频线上实验显示：LE（让下游模型自己学习 token embedding）比静态 EM 更有效，满意互动分别为 +0.22% 和 −0.02%。\nServing：缓存（Caching）+ 异步更新 TokenMinds 的 serving 架构。（论文 Figure 4，Liu et al., 2026。）\n为了让一个计算量很大的生成式模型能在数十亿用户规模下运行，用户表示由后台每 24 小时生成一次，并缓存在 key-value store 中；user model 请求直接读取 cache。发生 cache miss 或缓存过期时，后台 refresh service 会重新生成用户表示。\n生产环境达到 144 万次读取/秒、96.4% cache hit rate。存储上，每个用户的 user token 表示占 1,280 bytes，user embedding 则占 4,608 bytes。\n实验与结果 线上模型基于 Gemini-1.5 LLM：370M MoE encoder + 370M dense decoder，都从 PLUM 的 CPT checkpoint 初始化。模型每天用最新数据持续训练，只需要每天数百万条样本；相比之下，基于 Large Embedding Model（LEM）的模型通常需要数十亿次用户交互。\n训练 ablation（指标为 SID prefix 的 Recall@10）：\n模型 Session Recall Cold-Start Recall TokenMinds（完整） 0.291 0.210 − Multiple Targets 0.265（−8.9%） 0.203（−3.3%） − Look-ahead Window 0.278（−4.5%） 0.189（−10.0%） − SID Truncation 0.247（−15.1%） 0.174（−17.1%） 论文 Table 1。Session Recall 预测当前 session 最后一次观看；Cold-Start Recall 从截短的观看历史预测随机的未来观看。\n在 Cold-Start 上，去掉 Look-ahead Window 损失 10%，去掉 SID truncation 损失 17.1%。这说明：预测更远、更广的兴趣，以及用粗粒度 SID prefix 表示兴趣，对泛化尤其重要。\nLLM 初始化和搜索词的作用（相对“随机初始化、无搜索词”baseline 的 Recall@10 提升）：\n初始化方式 加入搜索词 Session Cold-Start Pre-Trained 否 +3.3% +5.7% CPT 否 +5.3% +8.7% Random 是 +12.5% +16.9% Pre-Trained 是 +18.5% +25.1% CPT 是 +23.5% +31.5% 论文 Table 2。\n这里有两个结论：\nCPT（Continued Pre-Training） \u003e Pre-Trained Gemini \u003e 随机初始化：通用 LLM 知识有帮助，而把 SID 和文本对齐的 CPT 还能进一步提升。 搜索词本身对 Cold-Start 就有 +16.9%；CPT + 搜索词达到 +31.5%：已经理解 SID 的 LLM，更能把文字表达的显式意图和视频观看历史结合起来。 最重要的线上 A/B 结果（在生产排序模型上运行 7 天）：\n场景 用户表示 Engaged Users Satisfied Engagement Embed-only 0.00% +0.05% 短视频（SFV） Token-only +0.04% +0.40% Embed + Token +0.11% +0.62% Embed-only +0.04% +0.03% 长视频（LFV） Token-only +0.01% +0.04% Embed + Token +0.02% +0.08% 论文 Table 4。粗体表示结果具有统计显著性。\n短视频上，embedding 和 token 一起使用的 +0.62%，甚至高于两者单独提升之和。这是论文重要的结果：dense embedding 更像是对历史的压缩，user token 更像是对未来兴趣的多路预测；它们是互补的。\n我的一些想法 TokenMinds 的优势与启发 把 Semantic ID 从 item 扩展到 user modeling：TIGER、OneRec 和 PLUM 证明了 SID 作为 item 表示的价值；TokenMinds 则在 YouTube 量级验证了 SID-based user token 的有效性。 用粗粒度 item SID prefix 表示用户兴趣：8 层 item SID 是语义空间里的一个“点”，4 层 user token 是一个“区域”。用户和 item 使用同一套 vocabulary，但处于不同粒度。Cold-Start ablation 的 −17.1% 说明这个简单设计非常有效。 异步 serving 是真正的 scale-up 关键：一个昂贵的用户表示只生成一次，却能被许多下游模型重复使用。缓存和异步刷新让 LLM 用户建模在工业规模下变得可行。 Tokenization 让跨场景统一变简单：在共享 SID 空间里，合并长视频和短视频只需要两个 condition token；一个模型就能替代两个模型。 用户搜索行为对 LLM 用户建模很有用：搜索词可以让 Cold-Start Recall@10 提升 +16.9%，与 CPT 结合后达到 +31.5%。 TokenMinds 的不足与可能的后续工作 长视频上的收益较弱：LFV 的满意互动只提升 +0.08%，明显小于短视频的 +0.62%。 24 小时更新一次可能太慢：尤其在短视频中，兴趣可能在一个 session 内就快速变化。论文的 encoder-decoder 拆分本来就允许“重 encoder 慢更新、轻 decoder 快更新”，后续很值得真正利用这个能力。 Learnable Embedding 增加了复杂度：SID prefix 本身已经有层级语义，下游模型却仍然要通过 N-gram 或 SentencePiece 为 SID prefix 的 sub-word 重新学习 embedding。如何更直接地利用 SID 结构，仍有优化空间。 大方向 为什么这篇论文重要：生成式推荐此前主要关注如何把 item 变成 Semantic ID。TokenMinds 证明了用户也可以被 token 化，而且多个 user token 确实能表达一个用户的多种兴趣。\n它也提醒我们，user token 不一定要取代 user embedding。Token 更适合表示离散、多样、面向未来的兴趣，embedding 更适合连续、紧凑地总结历史；两者结合可能才是更完整的用户表示。\n把这几篇工作连起来看，会形成一条很清楚的路线：TIGER → PLUM → TokenMinds——先把 item 变成语义 token，再教 LLM 理解这些 token，最后用同一种 token 语言表示用户。随着 LLM inference 继续变便宜、变强大，生成式推荐的下一波创新很可能会沿着这一方向发展：把用户、多模态内容和跨场景行为统一到一个可生成、可组合的 token 语义空间中。\n参考文献 Liu et al. TokenMinds: Pretrained User Tokens and Embeddings for User Understanding in Large Recommender Systems. Google DeepMind \u0026 YouTube, 2026 年 6 月。 He et al. PLUM: Adapting Pre-trained Language Models for Industrial-scale Generative Recommendations. Google DeepMind \u0026 YouTube, 2025 年 10 月。— 我的解读 Rajput et al. Recommender Systems with Generative Retrieval (TIGER). NeurIPS 2023。— 我的解读 Deng et al. OneRec: Unifying Retrieve and Rank with Generative Recommender and Preference Alignment. Kuaishou, 2025。— 我的解读 #ai #推荐系统 #生成式推荐 #用户建模 #tokenminds #semanticid #llm #gemini #youtube #人工智能 #ai学习 #大模型\n如果你觉得本文有帮助，欢迎点赞关注支持！\nIf you like this post, consider star the repo.\n",
+  "wordCount" : "943",
+  "inLanguage": "en",
+  "datePublished": "2026-08-14T10:00:00-07:00",
+  "dateModified": "2026-08-14T10:00:00-07:00",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sleepingbear-ai.github.io/posts/tokenminds/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Welcome to the Blog of SleepingBear",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://sleepingbear-ai.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://sleepingbear-ai.github.io/" accesskey="h" title="Welcome to the Blog of SleepingBear (Alt + H)">Welcome to the Blog of SleepingBear</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      TokenMinds 解释和思考：面向 YouTube 推荐的 LLM 用户建模
+    </h1>
+    <div class="post-meta">
+
+<span title='2026-08-14 10:00:00 -0700 PDT'>August 14, 2026</span>
+
+</div>
+  </header> 
+  <div class="post-content md-content"><p><em>TokenMinds（Google DeepMind &amp; YouTube）用一个基于 Gemini LLM 的 encoder-decoder 同时生成 user embedding 和 40 个离散 user token，把长视频与短视频的用户建模统一到一个模型里，并通过异步生成和 Cache 服务数十亿用户。它把 YouTube PLUM 的生成式推荐框架从召回推进到了 user modeling。</em></p>
+<p>论文：<strong><a href="https://arxiv.org/abs/2606.25147">TokenMinds: Pretrained User Tokens and Embeddings for User Understanding in Large Recommender Systems</a></strong>（Liu et al., Google DeepMind &amp; YouTube, 2026 年 6 月）</p>
+<hr>
+<h2 id="tldr">TL;DR<a hidden class="anchor" aria-hidden="true" href="#tldr">#</a></h2>
+<p>生成式推荐先给每个 item 分配一个 <strong>Semantic ID（SID）</strong>，再用自回归模型把推荐变成 <strong>Next SID Prediction</strong>。<a href="../tiger-generative-retrieval/">TIGER</a> 开创了这个方向，<a href="../plum/">PLUM</a> 则把 Gemini LLM 改造成了 YouTube 的线上生成式召回模型。</p>
+<p>TokenMinds 问了一个很自然的问题：<strong>既然视频可以有 Semantic ID，用户能不能也用 Semantic ID 表示？</strong></p>
+<p>它的答案是一个已经部署于 YouTube 全量推荐流量的 LLM 用户建模系统：</p>
+<ol>
+<li><strong>User Modeling 双重输出</strong>：模型是一个从 PLUM 预训练 LLM warm-start 的 encoder-decoder，负责读取用户行为。Encoder 生成一个 1,152 维 dense user embedding；decoder 用 beam search 生成 <strong>40 个基于 SID 的 user token</strong>。两者都作为特征交给下游排序模型。</li>
+<li><strong>一个模型统一两个场景</strong>：用 <code>&lt;LFV&gt;</code> / <code>&lt;SFV&gt;</code> token 区分长视频（Long-Form Video）和短视频（Short-Form Video）场景，只做一次共享 encoder inference，再分别 decode 两组 user token，节省 <strong>50% 训练算力和 31% serving 算力</strong>。</li>
+<li><strong>异步服务</strong>：每 24 小时离线更新一次用户表示并写入 cache。线上每秒读取 <strong>144 万次</strong>，cache hit rate 达到 <strong>96.4%</strong>；cache miss 时再异步触发生成。</li>
+</ol>
+<p>线上结果：在 YouTube 短视频推荐场景中，单独加入 embedding 带来 <code>+0.05%</code> 满意互动，单独加入 token 是 <code>+0.40%</code>，<strong>两者一起则达到 <code>+0.62%</code></strong>。这说明在 user modeling 中，user token 和 user embedding 不是重复的表示，而是可以互补。</p>
+<h2 id="user-modeling如何表示一个用户">User Modeling：如何表示一个用户？<a hidden class="anchor" aria-hidden="true" href="#user-modeling如何表示一个用户">#</a></h2>
+<p>用户建模（User Modeling）是推荐系统的基础模块：</p>
+<ul>
+<li><strong>输入</strong>：用户看过的长视频和短视频、搜索词、点赞和点踩、观看时长等行为序列。</li>
+<li><strong>输出</strong>：一个能被下游召回或排序模型使用的用户表示。</li>
+</ul>
+<p>传统方法通常把用户行为序列压缩成一个 <strong>dense user embedding</strong>。这种表示简单好用，但有一个结构上的上限：一个用户的多种兴趣，最终都挤进一个固定长度的向量。</p>
+<p>另一种近年出现的方法是让 LLM 生成文字版用户画像，比如“喜欢烹饪节目和赛车”。但论文认为，这类画像更容易捕捉<strong>话题共现</strong>，却不擅长理解行为序列中的动态变化；同时，文字和视频之间仍然存在 <strong>modality gap</strong>。</p>
+<p><img alt="三种用户表示方式：(a) dense embedding 把 1,200 次观看压进一个 1,152 维向量；(b) LLM 生成类似“喜欢烹饪节目和赛车”的文字画像；(c) TokenMinds 同时输出 encoder user embedding 和 40 个基于 Semantic ID 的离散 user token。" loading="lazy" src="/posts/tokenminds/user-representation.svg"></p>
+<p><em>TokenMinds 的 user token 是视频 SID 的前缀：用户的“下一类兴趣”和视频使用同一种语言表示。（本图专为本文绘制，基于论文第 1、2 节。）</em></p>
+<p><strong>TokenMinds 的核心想法</strong>：直接用已经在使用的视频 SID vocabulary 来表示用户。一个 user token 就是一个视频 SID prefix，每个用户由 40 个这样的 user token 表示。因此，用户兴趣和候选视频天然处在同一个语义空间里，并继承了 SID 的层级语义（hierarchical semantic meaning）。</p>
+<p>更重要的是，它没有试图用 token 完全取代 user embedding，而是同时输出两者作为用户表示。</p>
+<h2 id="方法详解">方法详解<a hidden class="anchor" aria-hidden="true" href="#方法详解">#</a></h2>
+<p>TokenMinds 沿用了 PLUM 的基础模块：同一个基于多模态视频 content embedding 的 RQ-VAE tokenizer，以及教会 Gemini LLM 理解 video SID 的 Continued Pre-Training（CPT）。如果你对这部分不熟悉，可以看我的 <a href="../plum/">PLUM 解读</a>；RQ-VAE 的细节则在 <a href="../tiger-generative-retrieval/">TIGER 解读</a> 里。</p>
+<p><img alt="论文 Figure 1：按时间排序的长视频、短视频、搜索和互动信号进入 encoder；decoder 通过 cross-attention 读取 encoder 输出并生成 SID user tokens，encoder 同时生成 dense user embedding；两种表示一起交给下游模型。" loading="lazy" src="/posts/tokenminds/fig1-overview.png"></p>
+<p><em>TokenMinds 整体架构。（<a href="https://arxiv.org/abs/2606.25147">论文</a> Figure 1，Liu et al., 2026。）</em></p>
+<h3 id="输入不只是普通的用户观看历史">输入：不只是普通的用户观看历史<a hidden class="anchor" aria-hidden="true" href="#输入不只是普通的用户观看历史">#</a></h3>
+<p>TokenMinds 的输入比普通的 user watch-history 丰富：</p>
+<ul>
+<li><strong>跨场景观看行为</strong>：长视频（LFV）和短视频（SFV）来自多个推荐入口（homepage recommendations、watch-next suggestions），按时间顺序交错排列。</li>
+<li><strong>搜索查询</strong>：显式表达用户意图。因为 CPT 已经把文本 token 和 SID 放进同一个 vocabulary，用户的最近 <strong>10 条</strong>搜索可以直接用 <code>&lt;Search&gt;</code> token 加入序列。</li>
+<li><strong>互动信号</strong>：每次观看的时长、观看比例、点赞、点踩、设备和时间戳。</li>
+</ul>
+<p>每次观看被压缩成一个很短的固定 token 序列：</p>
+<p><code>&lt;LFV|SFV&gt;</code> + <strong>4 个 SID token</strong> + <strong>1 个 soft token</strong></p>
+<p>前两部分表示视频场景和 SID；剩下的非 SID 特征先各自 embedding 后拼接，再经过 MLP 投影成一个 soft token。</p>
+<h3 id="模型架构为什么用-encoder-decoder">模型架构：为什么用 encoder-decoder？<a hidden class="anchor" aria-hidden="true" href="#模型架构为什么用-encoder-decoder">#</a></h3>
+<p>这个架构有两个直接好处：</p>
+<ul>
+<li><strong>Encoder 更适合读完整历史</strong>：双向 attention 能更全面地捕捉长序列模式，对 encoder state 做 pooling 就能得到 user embedding。</li>
+<li><strong>Serving 时可以拆开</strong>：encoder 很重，负责压缩最多 1,200 次视频观看构成的、变化较慢的长期用户历史；decoder 更轻，负责反映近期兴趣。两者分开后，可以低频更新 encoder、高频更新 decoder。</li>
+</ul>
+<h3 id="模型训练不只预测下一个视频">模型训练：不只预测“下一个视频”<a hidden class="anchor" aria-hidden="true" href="#模型训练不只预测下一个视频">#</a></h3>
+<p>给定一段用户历史，模型会生成一组 SID prefix，表示用户在接下来一段时间内可能观看的视频。</p>
+<p><img alt="论文 Figure 2：历史观看序列进入由 CPT 初始化的 encoder；同样由 CPT 初始化的 decoder 自回归生成未来 24 小时内多个随机观看视频的 SID。" loading="lazy" src="/posts/tokenminds/fig2-training.png"></p>
+<p><em>Encoder 读用户历史，decoder 一次生成未来 24 小时内多个观看目标的 SID。（<a href="https://arxiv.org/abs/2606.25147">论文</a> Figure 2，Liu et al., 2026。）</em></p>
+<p><img alt="TokenMinds loss：对 N 个未来观看目标的 SID token loss 求和，并结合 engagement reward。N 最多为 15；目标从未来 24 小时采样；只预测 SID 前 4 层。" loading="lazy" src="/posts/tokenminds/training-loss.svg"></p>
+<p><em>TokenMinds 模型的 Loss Function（论文 Equation 1，本图专为本文标注）。</em></p>
+<p>这个 Loss Function 本质上是经典的 Next Token Prediction（NTP）loss，只是扩展为一次预测多个目标。训练样本按 engagement reward 加权采样，采样后在 loss 中等权处理。</p>
+<p>模型训练里的三个设计是整个方法的核心：</p>
+<ul>
+<li><strong>Look-ahead sampling</strong>：不只预测紧接着的下一次观看，而是从<strong>未来 24 小时</strong>的观看里随机抽最多 <code>N=15</code> 个目标。这是因为用户模型应该表示一段时间内的多种兴趣，而不是过拟合某一次偶然点击。</li>
+<li><strong>SID truncation</strong>：视频的完整 SID 有 8 层，训练和输入编码只保留前 <strong>4 层</strong>。一个短前缀代表视频库里的一个语义区域，而不是某一个具体视频，所以更能表达“兴趣”，也减少记忆训练 item 的倾向。</li>
+<li><strong>一次预测多个目标</strong>：相比每个样本只预测一个目标，训练的 sample efficiency 更高。</li>
+</ul>
+<h3 id="cross-scenario一个模型同时理解长视频和短视频">Cross-scenario：一个模型同时理解长视频和短视频<a hidden class="anchor" aria-hidden="true" href="#cross-scenario一个模型同时理解长视频和短视频">#</a></h3>
+<p>长视频和短视频的消费方式明显不同，工业系统通常为它们训练两个用户模型。但论文指出：接近一半用户会同时使用两种形式，而且两者 SID 前两层的 vocabulary 有约 <strong>40% 重叠</strong>。用户兴趣并不会按视频形式彻底分开。</p>
+<p>TokenMinds 只需在每次观看前加一个 condition token（<code>&lt;LFV&gt;</code> 或 <code>&lt;SFV&gt;</code>），就能把两类行为按时间统一成一个用户行为序列，再输入同一个模型。用户的搜索查询也以同样的方式加入序列，并以 <code>&lt;Search&gt;</code> 作为前缀。Condition token 不参与 loss calculation——预测它们太简单，反而会降低模型质量。</p>
+<p>Serving 时，统一模型仍然需要分别输出 LFV 和 SFV 场景的 user token。一个朴素的方法是 <strong>Separate Per-Context Inference</strong>：分别为 LFV 和 SFV 运行一次 inference——这会让 encoder 重复计算两次：</p>
+<p><img alt="论文 Figure 3：左边为每个场景分别跑一次完整 inference；右边的 multi-context decoding 只 encode 一次，再为 LFV 和 SFV 分出两个共享 encoder hidden states 的并行 decoder sub-batch。" loading="lazy" src="/posts/tokenminds/fig3-multi-context-decoding.png"></p>
+<p><em>Multi-context decoding：一次 encode，按场景并行 decode。（<a href="https://arxiv.org/abs/2606.25147">论文</a> Figure 3，Liu et al., 2026。）</em></p>
+<p>TokenMinds 提出了一种巧妙的 <strong>multi-context decoding</strong> 方案：用户历史只 encode 一次，然后按场景将 decoding 分支为并行的 sub-batch，每个场景一个，并且全部共享相同的 encoder hidden states。结果是 serving inference 从 698 块芯片降到 481 块，节省 <strong>31%</strong>。训练算力也减半，因为一个统一模型替代了两个独立模型。</p>
+<h3 id="下游模型怎么使用-user-token">下游模型怎么使用 user token？<a hidden class="anchor" aria-hidden="true" href="#下游模型怎么使用-user-token">#</a></h3>
+<p>User modeling 输出的用户表示会被下游排序和召回模型使用。TokenMinds 同时输出 user embedding 和 user token——embedding 总结用户看过什么，token 则预测用户接下来会看什么。下游模型该如何把 user token 作为特征使用？</p>
+<p>论文测试了三种 token-to-embedding 方法：</p>
+<ol>
+<li><strong>Prefix Embedding Mapping（EM）</strong>：把每个 user token（SID prefix）映射回所有共享该 prefix 的视频对应的原始 content embedding（这些 embedding 正是生成视频 SID 时的输入），然后取均值（mean）。</li>
+<li><strong>N-gram Embedding</strong>：把 user token（SID prefix）切成固定长度的 sub-word，为每个 sub-word 学习一个 embedding，再把它们相加。</li>
+<li><strong>SPM Embedding</strong>：与方法 2 相同，但使用 SentencePiece 学习可变长度的 sub-word。</li>
+</ol>
+<p>方法 2 和 3 统称 <strong>Learnable Embeddings（LE）</strong>——它们使用随机初始化的 embedding table，并与下游模型一起端到端训练。用户的 40 个 token 都以这种方式转换成 embedding，然后 pooling 成一个 user vector。短视频线上实验显示：LE（让下游模型自己学习 token embedding）比静态 EM 更有效，满意互动分别为 <code>+0.22%</code> 和 <code>−0.02%</code>。</p>
+<h3 id="serving缓存caching-异步更新">Serving：缓存（Caching）+ 异步更新<a hidden class="anchor" aria-hidden="true" href="#serving缓存caching-异步更新">#</a></h3>
+<p><img alt="论文 Figure 4：线上请求先从 User Representation Table 读取缓存；数据缺失或过期时，异步 Refresh Service 读取用户历史、请求 TokenMinds 生成新表示，再写回缓存。" loading="lazy" src="/posts/tokenminds/fig4-serving.png"></p>
+<p><em>TokenMinds 的 serving 架构。（<a href="https://arxiv.org/abs/2606.25147">论文</a> Figure 4，Liu et al., 2026。）</em></p>
+<p>为了让一个计算量很大的生成式模型能在数十亿用户规模下运行，用户表示由后台每 24 小时生成一次，并缓存在 key-value store 中；user model 请求直接读取 cache。发生 cache miss 或缓存过期时，后台 refresh service 会重新生成用户表示。</p>
+<p>生产环境达到 <strong>144 万次读取/秒、96.4% cache hit rate</strong>。存储上，每个用户的 user token 表示占 <strong>1,280 bytes</strong>，user embedding 则占 <strong>4,608 bytes</strong>。</p>
+<h2 id="实验与结果">实验与结果<a hidden class="anchor" aria-hidden="true" href="#实验与结果">#</a></h2>
+<p>线上模型基于 <strong>Gemini-1.5 LLM</strong>：370M MoE encoder + 370M dense decoder，都从 PLUM 的 CPT checkpoint 初始化。模型每天用最新数据持续训练，只需要每天数百万条样本；相比之下，基于 Large Embedding Model（LEM）的模型通常需要数十亿次用户交互。</p>
+<p><strong>训练 ablation</strong>（指标为 SID prefix 的 Recall@10）：</p>
+<table>
+	<thead>
+			<tr>
+					<th style="text-align: left">模型</th>
+					<th style="text-align: center">Session Recall</th>
+					<th style="text-align: center">Cold-Start Recall</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: left"><strong>TokenMinds（完整）</strong></td>
+					<td style="text-align: center"><strong>0.291</strong></td>
+					<td style="text-align: center"><strong>0.210</strong></td>
+			</tr>
+			<tr>
+					<td style="text-align: left">− Multiple Targets</td>
+					<td style="text-align: center">0.265（−8.9%）</td>
+					<td style="text-align: center">0.203（−3.3%）</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">− Look-ahead Window</td>
+					<td style="text-align: center">0.278（−4.5%）</td>
+					<td style="text-align: center">0.189（−10.0%）</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">− SID Truncation</td>
+					<td style="text-align: center">0.247（−15.1%）</td>
+					<td style="text-align: center">0.174（−17.1%）</td>
+			</tr>
+	</tbody>
+</table>
+<p><em><a href="https://arxiv.org/abs/2606.25147">论文</a> Table 1。Session Recall 预测当前 session 最后一次观看；Cold-Start Recall 从截短的观看历史预测随机的未来观看。</em></p>
+<p>在 Cold-Start 上，去掉 Look-ahead Window 损失 10%，去掉 SID truncation 损失 17.1%。这说明：预测更远、更广的兴趣，以及用粗粒度 SID prefix 表示兴趣，对泛化尤其重要。</p>
+<p><strong>LLM 初始化和搜索词的作用</strong>（相对“随机初始化、无搜索词”baseline 的 Recall@10 提升）：</p>
+<table>
+	<thead>
+			<tr>
+					<th style="text-align: left">初始化方式</th>
+					<th style="text-align: center">加入搜索词</th>
+					<th style="text-align: center">Session</th>
+					<th style="text-align: center">Cold-Start</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: left">Pre-Trained</td>
+					<td style="text-align: center">否</td>
+					<td style="text-align: center">+3.3%</td>
+					<td style="text-align: center">+5.7%</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">CPT</td>
+					<td style="text-align: center">否</td>
+					<td style="text-align: center">+5.3%</td>
+					<td style="text-align: center">+8.7%</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">Random</td>
+					<td style="text-align: center">是</td>
+					<td style="text-align: center">+12.5%</td>
+					<td style="text-align: center">+16.9%</td>
+			</tr>
+			<tr>
+					<td style="text-align: left">Pre-Trained</td>
+					<td style="text-align: center">是</td>
+					<td style="text-align: center">+18.5%</td>
+					<td style="text-align: center">+25.1%</td>
+			</tr>
+			<tr>
+					<td style="text-align: left"><strong>CPT</strong></td>
+					<td style="text-align: center"><strong>是</strong></td>
+					<td style="text-align: center"><strong>+23.5%</strong></td>
+					<td style="text-align: center"><strong>+31.5%</strong></td>
+			</tr>
+	</tbody>
+</table>
+<p><em><a href="https://arxiv.org/abs/2606.25147">论文</a> Table 2。</em></p>
+<p>这里有两个结论：</p>
+<ul>
+<li><code>CPT（Continued Pre-Training） &gt; Pre-Trained Gemini &gt; 随机初始化</code>：通用 LLM 知识有帮助，而把 SID 和文本对齐的 CPT 还能进一步提升。</li>
+<li>搜索词本身对 Cold-Start 就有 <code>+16.9%</code>；CPT + 搜索词达到 <code>+31.5%</code>：已经理解 SID 的 LLM，更能把文字表达的显式意图和视频观看历史结合起来。</li>
+</ul>
+<p><strong>最重要的线上 A/B 结果</strong>（在生产排序模型上运行 7 天）：</p>
+<table>
+	<thead>
+			<tr>
+					<th style="text-align: left">场景</th>
+					<th style="text-align: left">用户表示</th>
+					<th style="text-align: center">Engaged Users</th>
+					<th style="text-align: center">Satisfied Engagement</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: left"></td>
+					<td style="text-align: left">Embed-only</td>
+					<td style="text-align: center">0.00%</td>
+					<td style="text-align: center">+0.05%</td>
+			</tr>
+			<tr>
+					<td style="text-align: left"><strong>短视频（SFV）</strong></td>
+					<td style="text-align: left">Token-only</td>
+					<td style="text-align: center">+0.04%</td>
+					<td style="text-align: center"><strong>+0.40%</strong></td>
+			</tr>
+			<tr>
+					<td style="text-align: left"></td>
+					<td style="text-align: left">Embed + Token</td>
+					<td style="text-align: center"><strong>+0.11%</strong></td>
+					<td style="text-align: center"><strong>+0.62%</strong></td>
+			</tr>
+			<tr>
+					<td style="text-align: left"></td>
+					<td style="text-align: left">Embed-only</td>
+					<td style="text-align: center"><strong>+0.04%</strong></td>
+					<td style="text-align: center">+0.03%</td>
+			</tr>
+			<tr>
+					<td style="text-align: left"><strong>长视频（LFV）</strong></td>
+					<td style="text-align: left">Token-only</td>
+					<td style="text-align: center">+0.01%</td>
+					<td style="text-align: center">+0.04%</td>
+			</tr>
+			<tr>
+					<td style="text-align: left"></td>
+					<td style="text-align: left">Embed + Token</td>
+					<td style="text-align: center"><strong>+0.02%</strong></td>
+					<td style="text-align: center"><strong>+0.08%</strong></td>
+			</tr>
+	</tbody>
+</table>
+<p><em><a href="https://arxiv.org/abs/2606.25147">论文</a> Table 4。粗体表示结果具有统计显著性。</em></p>
+<p>短视频上，embedding 和 token 一起使用的 <code>+0.62%</code>，甚至高于两者单独提升之和。这是论文重要的结果：<strong>dense embedding 更像是对历史的压缩，user token 更像是对未来兴趣的多路预测；它们是互补的。</strong></p>
+<h2 id="我的一些想法">我的一些想法<a hidden class="anchor" aria-hidden="true" href="#我的一些想法">#</a></h2>
+<h3 id="tokenminds-的优势与启发">TokenMinds 的优势与启发<a hidden class="anchor" aria-hidden="true" href="#tokenminds-的优势与启发">#</a></h3>
+<ul>
+<li><strong>把 Semantic ID 从 item 扩展到 user modeling</strong>：TIGER、OneRec 和 PLUM 证明了 SID 作为 item 表示的价值；TokenMinds 则在 YouTube 量级验证了 SID-based user token 的有效性。</li>
+<li><strong>用粗粒度 item SID prefix 表示用户兴趣</strong>：8 层 item SID 是语义空间里的一个“点”，4 层 user token 是一个“区域”。用户和 item 使用同一套 vocabulary，但处于不同粒度。Cold-Start ablation 的 <code>−17.1%</code> 说明这个简单设计非常有效。</li>
+<li><strong>异步 serving 是真正的 scale-up 关键</strong>：一个昂贵的用户表示只生成一次，却能被许多下游模型重复使用。缓存和异步刷新让 LLM 用户建模在工业规模下变得可行。</li>
+<li><strong>Tokenization 让跨场景统一变简单</strong>：在共享 SID 空间里，合并长视频和短视频只需要两个 condition token；一个模型就能替代两个模型。</li>
+<li><strong>用户搜索行为对 LLM 用户建模很有用</strong>：搜索词可以让 Cold-Start Recall@10 提升 <code>+16.9%</code>，与 CPT 结合后达到 <code>+31.5%</code>。</li>
+</ul>
+<h3 id="tokenminds-的不足与可能的后续工作">TokenMinds 的不足与可能的后续工作<a hidden class="anchor" aria-hidden="true" href="#tokenminds-的不足与可能的后续工作">#</a></h3>
+<ul>
+<li><strong>长视频上的收益较弱</strong>：LFV 的满意互动只提升 <code>+0.08%</code>，明显小于短视频的 <code>+0.62%</code>。</li>
+<li><strong>24 小时更新一次可能太慢</strong>：尤其在短视频中，兴趣可能在一个 session 内就快速变化。论文的 encoder-decoder 拆分本来就允许“重 encoder 慢更新、轻 decoder 快更新”，后续很值得真正利用这个能力。</li>
+<li><strong>Learnable Embedding 增加了复杂度</strong>：SID prefix 本身已经有层级语义，下游模型却仍然要通过 N-gram 或 SentencePiece 为 SID prefix 的 sub-word 重新学习 embedding。如何更直接地利用 SID 结构，仍有优化空间。</li>
+</ul>
+<h3 id="大方向">大方向<a hidden class="anchor" aria-hidden="true" href="#大方向">#</a></h3>
+<p><strong>为什么这篇论文重要</strong>：生成式推荐此前主要关注如何把 item 变成 Semantic ID。TokenMinds 证明了<strong>用户也可以被 token 化</strong>，而且多个 user token 确实能表达一个用户的多种兴趣。</p>
+<p>它也提醒我们，user token 不一定要取代 user embedding。Token 更适合表示离散、多样、面向未来的兴趣，embedding 更适合连续、紧凑地总结历史；两者结合可能才是更完整的用户表示。</p>
+<p>把这几篇工作连起来看，会形成一条很清楚的路线：<strong><a href="../tiger-generative-retrieval/">TIGER</a> → <a href="../plum/">PLUM</a> → TokenMinds</strong>——先把 item 变成语义 token，再教 LLM 理解这些 token，最后用同一种 token 语言表示用户。随着 LLM inference 继续变便宜、变强大，生成式推荐的下一波创新很可能会沿着这一方向发展：把用户、多模态内容和跨场景行为统一到一个可生成、可组合的 token 语义空间中。</p>
+<h2 id="参考文献">参考文献<a hidden class="anchor" aria-hidden="true" href="#参考文献">#</a></h2>
+<ol>
+<li>Liu et al. <strong><a href="https://arxiv.org/abs/2606.25147">TokenMinds: Pretrained User Tokens and Embeddings for User Understanding in Large Recommender Systems</a></strong>. Google DeepMind &amp; YouTube, 2026 年 6 月。</li>
+<li>He et al. <strong><a href="https://arxiv.org/abs/2510.07784">PLUM: Adapting Pre-trained Language Models for Industrial-scale Generative Recommendations</a></strong>. Google DeepMind &amp; YouTube, 2025 年 10 月。— <a href="../plum/">我的解读</a></li>
+<li>Rajput et al. <strong><a href="https://arxiv.org/abs/2305.05065">Recommender Systems with Generative Retrieval (TIGER)</a></strong>. NeurIPS 2023。— <a href="../tiger-generative-retrieval/">我的解读</a></li>
+<li>Deng et al. <strong><a href="https://arxiv.org/abs/2502.18965">OneRec: Unifying Retrieve and Rank with Generative Recommender and Preference Alignment</a></strong>. Kuaishou, 2025。— <a href="../onerec/">我的解读</a></li>
+</ol>
+<hr>
+<p>#ai #推荐系统 #生成式推荐 #用户建模 #tokenminds #semanticid #llm #gemini #youtube #人工智能 #ai学习 #大模型</p>
+<p>如果你觉得本文有帮助，欢迎<a href="https://www.rednote.com/user/profile/61d67d89000000001000c76b">点赞关注</a>支持！</p>
+<p>If you like this post, consider star <a href="https://github.com/sleepingbear-ai/sleepingbear-ai.github.io">the repo</a>.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://sleepingbear-ai.github.io/tags/ai/">Ai</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/">推荐系统</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/%E7%94%9F%E6%88%90%E5%BC%8F%E6%8E%A8%E8%8D%90/">生成式推荐</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/%E7%94%A8%E6%88%B7%E5%BB%BA%E6%A8%A1/">用户建模</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/tokenminds/">Tokenminds</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/semanticid/">Semanticid</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/llm/">Llm</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/gemini/">Gemini</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/youtube/">Youtube</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/">人工智能</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/ai%E5%AD%A6%E4%B9%A0/">Ai学习</a></li>
+      <li><a href="https://sleepingbear-ai.github.io/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/">大模型</a></li>
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://sleepingbear-ai.github.io/">Welcome to the Blog of SleepingBear</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    window.onscroll = function () {
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
+        } else {
+            toplink.classList.add("hidden");
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

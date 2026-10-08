@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Anthropic：如何构建有效的 AI Agent | Welcome to the Blog of SleepingBear</title>
+<meta name="keywords" content="">
+<meta name="description" content="解读 Anthropic《Building effective agents》：增强型 LLM、五种 Workflow、自主 Agent，以及 Agent Frameworks 选择、工具设计和持续评估。">
+<meta name="author" content="">
+<link rel="canonical" href="https://sleepingbear-ai.github.io/posts/building-effective-agents/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.cd9298b33628769aa1bc1acebbbfd7aa11ce81dfe03484d479e1907760249a1d.css" integrity="sha256-zZKYszYodpqhvBrOu7/XqhHOgd/gNITUeeGQd2Akmh0=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://sleepingbear-ai.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://sleepingbear-ai.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://sleepingbear-ai.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://sleepingbear-ai.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://sleepingbear-ai.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://sleepingbear-ai.github.io/posts/building-effective-agents/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://sleepingbear-ai.github.io/posts/building-effective-agents/">
+  <meta property="og:site_name" content="Welcome to the Blog of SleepingBear">
+  <meta property="og:title" content="Anthropic：如何构建有效的 AI Agent">
+  <meta property="og:description" content="解读 Anthropic《Building effective agents》：增强型 LLM、五种 Workflow、自主 Agent，以及 Agent Frameworks 选择、工具设计和持续评估。">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-10-08T10:00:00-07:00">
+    <meta property="article:modified_time" content="2026-10-08T10:00:00-07:00">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Anthropic：如何构建有效的 AI Agent">
+  <meta name="twitter:description" content="解读 Anthropic《Building effective agents》：增强型 LLM、五种 Workflow、自主 Agent，以及 Agent Frameworks 选择、工具设计和持续评估。">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://sleepingbear-ai.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Anthropic：如何构建有效的 AI Agent",
+      "item": "https://sleepingbear-ai.github.io/posts/building-effective-agents/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Anthropic：如何构建有效的 AI Agent",
+  "name": "Anthropic：如何构建有效的 AI Agent",
+  "description": "解读 Anthropic《Building effective agents》：增强型 LLM、五种 Workflow、自主 Agent，以及 Agent Frameworks 选择、工具设计和持续评估。",
+  "keywords": [
+    
+  ],
+  "articleBody": "Anthropic 在 Building effective agents 中总结了一组简单、可组合的架构模式。核心建议是：从最简单的方案开始，只有评估证明有收益时，才增加复杂度。\n原文发表于 2024 年 12 月，Agent的构建方法日新月异， 但此文仍值得学习。下面聚焦其架构与工程原则，配图均来自 Anthropic 原文。\n先区分 Workflow 与 Agent 「Agent」这个词有不同用法。Anthropic 将相关系统统称为 agentic systems，同时区分两种架构：\nWorkflow： 由代码预先规定执行路径，编排 LLM 与工具，适合任务边界清楚、需要可预测行为的场景。 Agent： 由 LLM 动态决定流程与工具使用，适合步骤难以预知、需要灵活决策的开放任务。 选择时先问：单次 LLM 调用能否解决问题？如是则不必用Agent, 用Workflow: 很多 AI 应用通过检索（Retrieval）补充信息、通过上下文示例（In-Context Examples）明确要求，就能满足需求。Agent 通常要用更多成本和延迟换取任务效果，需要评估这笔交换是否值得。\n基础组件：Augmented LLM 后面的模式都建立在 Augmented LLM（增强型 LLM） 之上：为模型接入检索、工具和记忆。模型可以生成搜索请求、选择工具，也可以决定保留哪些信息。\n实现时有两个重点：增强能力要匹配具体任务，接口要清晰、文档要完整。原文提到 MCP 是接入外部工具与数据源的一种方式。\n五种常见 Workflow Prompt chaining：串联 把任务拆成固定步骤，每次 LLM 调用处理前一步的输出。这样每次调用只需完成一个更简单的子任务，以额外延迟换取更高准确性。\n图中的 Gate 是程序化检查：确认中间结果符合要求，再继续下一步。例如先生成提纲，检查是否覆盖必要内容，通过后才写正文。另一个例子是先生成营销文案，再翻译。\n适用条件： 能提前将任务清楚地拆成固定子任务，各步骤之间有明确的输入输出关系。\nRouting：路由 先对输入分类，再交给专门的模型、Prompt 或流程。每条路径可以单独优化，减少一个通用 Prompt 同时处理多类问题时的相互干扰。\n例如，客服问题分到一般咨询、退款和技术支持；也可以将简单问题交给成本较低的模型，复杂问题交给能力更强的模型。分类既可以用 LLM，也可以用传统分类器或算法。\n适用条件： 输入类别有清晰差异，并且系统能够可靠地判断类别。分流准确性会影响后续处理效果。\nParallelization：并行 让多个 LLM 调用同时执行，再由程序汇总。原文区分两种形式：\nSectioning（分工）： 将独立子任务并行处理。例如，一次调用回答用户问题，另一次检查安全性；或分别评估答案的不同质量维度。 Voting（投票）： 对同一任务进行多次尝试，使用不同 Prompt 获得多种判断，再聚合结果。例如多次审查代码漏洞，或按不同投票阈值判断内容是否违规。 适用条件： 子任务可以独立执行，或者多个视角能提高判断的可信度。分工可以降低等待时间，也让每次调用更专注；投票阈值则需要根据误报与漏报的取舍来选择。\nOrchestrator-workers：协调与分工 由一个中央 LLM（Orchestrator）理解任务，动态拆分子任务，分派给 Worker LLM，最后综合结果。\n例如，修改代码时，需要改哪些文件、每个文件如何改，取决于具体需求；深度搜索（Deep Search）时，也需要根据问题决定调查哪些方向。\n适用条件： 无法提前列出完整的子任务。它与并行模式的关键区别是分工方式：并行模式的子任务预先确定，这里的子任务由协调者根据输入动态产生。Anthropic 仍将这种结构列为 Workflow。\nEvaluator-optimizer：评估与优化 一个 LLM 生成结果，另一个 LLM 提供评价和反馈，再据此修改，形成循环。这里的重点是建立有效的评价标准，让反馈能够指导下一轮改进。\n原文给出两个判断信号：人类提出反馈后，结果确实能改善；LLM 也能提供类似的有效反馈。 两者成立时，迭代才更可能带来价值。\n例如，文学翻译需要反复处理细微语义和表达；深度搜索（Deep Search）需要评价当前信息是否充分，再决定是否补充检索。适用条件： 标准明确，而且改进效果可以验证。\nAgent：根据环境反馈行动 Agent 通常从用户指令或一段澄清对话开始。目标明确后，模型制定计划并执行，在需要额外信息或判断时再请求人类介入。\n实现的核心是一个循环：决定行动 → 执行工具 → 获得环境反馈 → 决定下一步。 工具返回值、代码执行结果等提供了判断进展的依据，帮助 Agent 调整行动并从错误中恢复。\n这类架构适合难以预知步骤数量、无法写死执行路径的任务，例如修复代码问题或操作计算机。系统可以在完成目标时结束，也应设置最大迭代次数等停止条件，并在检查点或阻塞时请求人类反馈。\n自主性带来更高成本，也可能让错误在多轮行动中累积。因此，原文建议在沙箱中充分测试，并设置适当的边界控制（Guardrails）。任务越开放，越需要验证模型决策和工具使用是否可靠。\n工程原则：简单、透明、清晰的工具接口 Agent Frameworks：理解底层，再选择抽象 Agent Frameworks 可以简化模型调用、工具定义与解析、调用串联等工作，但额外的抽象可能遮住 Prompt 和响应，使调试更困难，也容易促使开发者过早增加复杂度。\nAnthropic 建议从直接调用 LLM API 开始，很多模式只需少量代码即可实现。使用 Agent Frameworks 时，要理解它实际怎样运行；对 Framework 底层机制的错误假设，是常见的问题来源。\n透明：让计划与执行步骤可观察 原文将明确展示 Agent 的计划步骤列为核心原则。系统需要让人看清它准备做什么、已经执行了哪些关键行动，以便理解行为、定位错误，并在需要时介入。\nACI：把工具接口当成产品来设计 Agent-Computer Interface（ACI） 是模型与工具交互的接口。原文建议像设计人机界面一样投入精力：工具定义和文档也需要认真做 Prompt Engineering。\n描述清楚： 说明用途、参数含义、输入格式、示例、边界情况，以及与其他相似工具的区别。 降低格式负担： 避免要求模型精确计算 diff 行数，或为代码进行大量 JSON 转义。等价的操作格式，对模型的难度可能不同。 观察真实用法： 用多种输入查看模型怎样选择工具和传参，再迭代接口。 从接口上防错： 调整参数与约束，让常见错误更难发生。 原文中的具体例子: Coding Agent 改变工作目录后容易用错相对文件路径，将工具改为要求绝对文件路径后，这类错误得到解决。Anthropic 在其 SWE-bench Agent 上，优化工具所花的时间甚至超过了整体 Prompt调试。\n组合模式，持续评估 这些模式可以按任务组合和调整。例如，路由后的某条路径可以串联多个步骤，也可以加入评估与优化循环。\n原文反复强调：先建立简单方案，再通过评估迭代。每次增加步骤、自主性或模型调用，都应确认任务效果的收益是否值得额外成本和延迟。\n",
+  "wordCount" : "172",
+  "inLanguage": "en",
+  "datePublished": "2026-10-08T10:00:00-07:00",
+  "dateModified": "2026-10-08T10:00:00-07:00",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://sleepingbear-ai.github.io/posts/building-effective-agents/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Welcome to the Blog of SleepingBear",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://sleepingbear-ai.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://sleepingbear-ai.github.io/" accesskey="h" title="Welcome to the Blog of SleepingBear (Alt + H)">Welcome to the Blog of SleepingBear</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      Anthropic：如何构建有效的 AI Agent
+    </h1>
+    <div class="post-meta">
+
+<span title='2026-10-08 10:00:00 -0700 PDT'>October 8, 2026</span>
+
+</div>
+  </header> 
+  <div class="post-content md-content"><p>Anthropic 在 <a href="https://www.anthropic.com/engineering/building-effective-agents">Building effective agents</a> 中总结了一组简单、可组合的架构模式。核心建议是：<strong>从最简单的方案开始，只有评估证明有收益时，才增加复杂度。</strong></p>
+<p>原文发表于 2024 年 12 月，Agent的构建方法日新月异， 但此文仍值得学习。下面聚焦其架构与工程原则，配图均来自 Anthropic 原文。</p>
+<h2 id="先区分-workflow-与-agent">先区分 Workflow 与 Agent<a hidden class="anchor" aria-hidden="true" href="#先区分-workflow-与-agent">#</a></h2>
+<p>「Agent」这个词有不同用法。Anthropic 将相关系统统称为 agentic systems，同时区分两种架构：</p>
+<ul>
+<li><strong>Workflow：</strong> 由代码预先规定执行路径，编排 LLM 与工具，适合任务边界清楚、需要可预测行为的场景。</li>
+<li><strong>Agent：</strong> 由 LLM 动态决定流程与工具使用，适合步骤难以预知、需要灵活决策的开放任务。</li>
+</ul>
+<p>选择时先问：单次 LLM 调用能否解决问题？如是则不必用Agent, 用Workflow: 很多 AI 应用通过检索（Retrieval）补充信息、通过上下文示例（In-Context Examples）明确要求，就能满足需求。Agent 通常要用更多成本和延迟换取任务效果，需要评估这笔交换是否值得。</p>
+<h3 id="基础组件augmented-llm">基础组件：Augmented LLM<a hidden class="anchor" aria-hidden="true" href="#基础组件augmented-llm">#</a></h3>
+<p>后面的模式都建立在 <strong>Augmented LLM（增强型 LLM）</strong> 之上：为模型接入检索、工具和记忆。模型可以生成搜索请求、选择工具，也可以决定保留哪些信息。</p>
+<p>实现时有两个重点：增强能力要匹配具体任务，接口要清晰、文档要完整。原文提到 MCP 是接入外部工具与数据源的一种方式。</p>
+<p><img alt="Augmented LLM：模型连接检索、工具与记忆，图源 Anthropic" loading="lazy" src="/images/building-effective-agents/augmented-llm.png"></p>
+<h2 id="五种常见-workflow">五种常见 Workflow<a hidden class="anchor" aria-hidden="true" href="#五种常见-workflow">#</a></h2>
+<h3 id="prompt-chaining串联">Prompt chaining：串联<a hidden class="anchor" aria-hidden="true" href="#prompt-chaining串联">#</a></h3>
+<p>把任务拆成固定步骤，每次 LLM 调用处理前一步的输出。这样每次调用只需完成一个更简单的子任务，以额外延迟换取更高准确性。</p>
+<p>图中的 <strong>Gate</strong> 是程序化检查：确认中间结果符合要求，再继续下一步。例如先生成提纲，检查是否覆盖必要内容，通过后才写正文。另一个例子是先生成营销文案，再翻译。</p>
+<p><strong>适用条件：</strong> 能提前将任务清楚地拆成固定子任务，各步骤之间有明确的输入输出关系。</p>
+<p><img alt="Prompt chaining：串联调用与中间检查，图源 Anthropic" loading="lazy" src="/images/building-effective-agents/prompt-chaining.png"></p>
+<h3 id="routing路由">Routing：路由<a hidden class="anchor" aria-hidden="true" href="#routing路由">#</a></h3>
+<p>先对输入分类，再交给专门的模型、Prompt 或流程。每条路径可以单独优化，减少一个通用 Prompt 同时处理多类问题时的相互干扰。</p>
+<p>例如，客服问题分到一般咨询、退款和技术支持；也可以将简单问题交给成本较低的模型，复杂问题交给能力更强的模型。分类既可以用 LLM，也可以用传统分类器或算法。</p>
+<p><strong>适用条件：</strong> 输入类别有清晰差异，并且系统能够可靠地判断类别。分流准确性会影响后续处理效果。</p>
+<p><img alt="Routing：分类后分流到专门的处理路径，图源 Anthropic" loading="lazy" src="/images/building-effective-agents/routing.png"></p>
+<h3 id="parallelization并行">Parallelization：并行<a hidden class="anchor" aria-hidden="true" href="#parallelization并行">#</a></h3>
+<p>让多个 LLM 调用同时执行，再由程序汇总。原文区分两种形式：</p>
+<ul>
+<li><strong>Sectioning（分工）：</strong> 将独立子任务并行处理。例如，一次调用回答用户问题，另一次检查安全性；或分别评估答案的不同质量维度。</li>
+<li><strong>Voting（投票）：</strong> 对同一任务进行多次尝试，使用不同 Prompt 获得多种判断，再聚合结果。例如多次审查代码漏洞，或按不同投票阈值判断内容是否违规。</li>
+</ul>
+<p><strong>适用条件：</strong> 子任务可以独立执行，或者多个视角能提高判断的可信度。分工可以降低等待时间，也让每次调用更专注；投票阈值则需要根据误报与漏报的取舍来选择。</p>
+<p><img alt="Parallelization：并行执行后汇总，图源 Anthropic" loading="lazy" src="/images/building-effective-agents/parallelization.png"></p>
+<h3 id="orchestrator-workers协调与分工">Orchestrator-workers：协调与分工<a hidden class="anchor" aria-hidden="true" href="#orchestrator-workers协调与分工">#</a></h3>
+<p>由一个中央 LLM（Orchestrator）理解任务，动态拆分子任务，分派给 Worker LLM，最后综合结果。</p>
+<p>例如，修改代码时，需要改哪些文件、每个文件如何改，取决于具体需求；深度搜索（Deep Search）时，也需要根据问题决定调查哪些方向。</p>
+<p><strong>适用条件：</strong> 无法提前列出完整的子任务。它与并行模式的关键区别是分工方式：并行模式的子任务预先确定，这里的子任务由协调者根据输入动态产生。Anthropic 仍将这种结构列为 Workflow。</p>
+<p><img alt="Orchestrator-workers：动态拆分、分派与汇总，图源 Anthropic" loading="lazy" src="/images/building-effective-agents/orchestrator-workers.png"></p>
+<h3 id="evaluator-optimizer评估与优化">Evaluator-optimizer：评估与优化<a hidden class="anchor" aria-hidden="true" href="#evaluator-optimizer评估与优化">#</a></h3>
+<p>一个 LLM 生成结果，另一个 LLM 提供评价和反馈，再据此修改，形成循环。这里的重点是建立有效的评价标准，让反馈能够指导下一轮改进。</p>
+<p>原文给出两个判断信号：<strong>人类提出反馈后，结果确实能改善；LLM 也能提供类似的有效反馈。</strong> 两者成立时，迭代才更可能带来价值。</p>
+<p>例如，文学翻译需要反复处理细微语义和表达；深度搜索（Deep Search）需要评价当前信息是否充分，再决定是否补充检索。<strong>适用条件：</strong> 标准明确，而且改进效果可以验证。</p>
+<p><img alt="Evaluator-optimizer：生成、评价与反馈循环，图源 Anthropic" loading="lazy" src="/images/building-effective-agents/evaluator-optimizer.png"></p>
+<h2 id="agent根据环境反馈行动">Agent：根据环境反馈行动<a hidden class="anchor" aria-hidden="true" href="#agent根据环境反馈行动">#</a></h2>
+<p>Agent 通常从用户指令或一段澄清对话开始。目标明确后，模型制定计划并执行，在需要额外信息或判断时再请求人类介入。</p>
+<p>实现的核心是一个循环：<strong>决定行动 → 执行工具 → 获得环境反馈 → 决定下一步。</strong> 工具返回值、代码执行结果等提供了判断进展的依据，帮助 Agent 调整行动并从错误中恢复。</p>
+<p>这类架构适合难以预知步骤数量、无法写死执行路径的任务，例如修复代码问题或操作计算机。系统可以在完成目标时结束，也应设置最大迭代次数等停止条件，并在检查点或阻塞时请求人类反馈。</p>
+<p><img alt="Autonomous agent：与环境交互并根据反馈继续行动，图源 Anthropic" loading="lazy" src="/images/building-effective-agents/autonomous-agent.png"></p>
+<p>自主性带来更高成本，也可能让错误在多轮行动中累积。因此，原文建议在沙箱中充分测试，并设置适当的边界控制（Guardrails）。任务越开放，越需要验证模型决策和工具使用是否可靠。</p>
+<h2 id="工程原则简单透明清晰的工具接口">工程原则：简单、透明、清晰的工具接口<a hidden class="anchor" aria-hidden="true" href="#工程原则简单透明清晰的工具接口">#</a></h2>
+<h3 id="agent-frameworks理解底层再选择抽象">Agent Frameworks：理解底层，再选择抽象<a hidden class="anchor" aria-hidden="true" href="#agent-frameworks理解底层再选择抽象">#</a></h3>
+<p>Agent Frameworks 可以简化模型调用、工具定义与解析、调用串联等工作，但额外的抽象可能遮住 Prompt 和响应，使调试更困难，也容易促使开发者过早增加复杂度。</p>
+<p>Anthropic 建议从直接调用 LLM API 开始，很多模式只需少量代码即可实现。使用 Agent Frameworks 时，要理解它实际怎样运行；对 Framework 底层机制的错误假设，是常见的问题来源。</p>
+<h3 id="透明让计划与执行步骤可观察">透明：让计划与执行步骤可观察<a hidden class="anchor" aria-hidden="true" href="#透明让计划与执行步骤可观察">#</a></h3>
+<p>原文将明确展示 Agent 的计划步骤列为核心原则。系统需要让人看清它准备做什么、已经执行了哪些关键行动，以便理解行为、定位错误，并在需要时介入。</p>
+<h3 id="aci把工具接口当成产品来设计">ACI：把工具接口当成产品来设计<a hidden class="anchor" aria-hidden="true" href="#aci把工具接口当成产品来设计">#</a></h3>
+<p><strong>Agent-Computer Interface（ACI）</strong> 是模型与工具交互的接口。原文建议像设计人机界面一样投入精力：工具定义和文档也需要认真做 Prompt Engineering。</p>
+<ul>
+<li><strong>描述清楚：</strong> 说明用途、参数含义、输入格式、示例、边界情况，以及与其他相似工具的区别。</li>
+<li><strong>降低格式负担：</strong> 避免要求模型精确计算 diff 行数，或为代码进行大量 JSON 转义。等价的操作格式，对模型的难度可能不同。</li>
+<li><strong>观察真实用法：</strong> 用多种输入查看模型怎样选择工具和传参，再迭代接口。</li>
+<li><strong>从接口上防错：</strong> 调整参数与约束，让常见错误更难发生。</li>
+</ul>
+<p>原文中的具体例子: Coding Agent 改变工作目录后容易用错相对文件路径，将工具改为要求绝对文件路径后，这类错误得到解决。Anthropic 在其 SWE-bench Agent 上，优化工具所花的时间甚至超过了整体 Prompt调试。</p>
+<h2 id="组合模式持续评估">组合模式，持续评估<a hidden class="anchor" aria-hidden="true" href="#组合模式持续评估">#</a></h2>
+<p>这些模式可以按任务组合和调整。例如，路由后的某条路径可以串联多个步骤，也可以加入评估与优化循环。</p>
+<p>原文反复强调：先建立简单方案，再通过评估迭代。每次增加步骤、自主性或模型调用，都应确认任务效果的收益是否值得额外成本和延迟。</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://sleepingbear-ai.github.io/">Welcome to the Blog of SleepingBear</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    window.onscroll = function () {
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
+        } else {
+            toplink.classList.add("hidden");
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
