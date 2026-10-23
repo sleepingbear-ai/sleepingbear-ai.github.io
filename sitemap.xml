@@ -3,17 +3,41 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://sleepingbear-ai.github.io/posts/building-effective-agents/</loc>
-    <lastmod>2026-10-08T10:00:00-07:00</lastmod>
+    <loc>https://sleepingbear-ai.github.io/tags/ai/</loc>
+    <lastmod>2026-10-21T12:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/tags/aiagents/</loc>
+    <lastmod>2026-10-21T12:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/tags/aicoding/</loc>
+    <lastmod>2026-10-21T12:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/tags/ai%E7%BC%96%E7%A8%8B/</loc>
+    <lastmod>2026-10-21T12:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/tags/codingagent/</loc>
+    <lastmod>2026-10-21T12:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/tags/llm/</loc>
+    <lastmod>2026-10-21T12:00:00-07:00</lastmod>
   </url><url>
     <loc>https://sleepingbear-ai.github.io/posts/</loc>
-    <lastmod>2026-10-08T10:00:00-07:00</lastmod>
+    <lastmod>2026-10-21T12:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/tags/</loc>
+    <lastmod>2026-10-21T12:00:00-07:00</lastmod>
   </url><url>
     <loc>https://sleepingbear-ai.github.io/</loc>
-    <lastmod>2026-10-08T10:00:00-07:00</lastmod>
+    <lastmod>2026-10-21T12:00:00-07:00</lastmod>
   </url><url>
-    <loc>https://sleepingbear-ai.github.io/tags/ai/</loc>
-    <lastmod>2026-09-20T10:00:00-07:00</lastmod>
+    <loc>https://sleepingbear-ai.github.io/tags/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/</loc>
+    <lastmod>2026-10-21T12:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/posts/coding_agent_architecture/</loc>
+    <lastmod>2026-10-21T12:00:00-07:00</lastmod>
+  </url><url>
+    <loc>https://sleepingbear-ai.github.io/posts/building-effective-agents/</loc>
+    <lastmod>2026-10-08T10:00:00-07:00</lastmod>
   </url><url>
     <loc>https://sleepingbear-ai.github.io/tags/ai%E5%AD%A6%E4%B9%A0/</loc>
     <lastmod>2026-09-20T10:00:00-07:00</lastmod>
@@ -36,12 +60,6 @@
     <loc>https://sleepingbear-ai.github.io/tags/scalinglaw/</loc>
     <lastmod>2026-09-20T10:00:00-07:00</lastmod>
   </url><url>
-    <loc>https://sleepingbear-ai.github.io/tags/</loc>
-    <lastmod>2026-09-20T10:00:00-07:00</lastmod>
-  </url><url>
-    <loc>https://sleepingbear-ai.github.io/tags/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/</loc>
-    <lastmod>2026-09-20T10:00:00-07:00</lastmod>
-  </url><url>
     <loc>https://sleepingbear-ai.github.io/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/</loc>
     <lastmod>2026-09-20T10:00:00-07:00</lastmod>
   </url><url>
@@ -52,21 +70,6 @@
     <lastmod>2026-09-20T10:00:00-07:00</lastmod>
   </url><url>
     <loc>https://sleepingbear-ai.github.io/tags/aci/</loc>
-    <lastmod>2026-08-25T10:00:00-07:00</lastmod>
-  </url><url>
-    <loc>https://sleepingbear-ai.github.io/tags/aiagents/</loc>
-    <lastmod>2026-08-25T10:00:00-07:00</lastmod>
-  </url><url>
-    <loc>https://sleepingbear-ai.github.io/tags/aicoding/</loc>
-    <lastmod>2026-08-25T10:00:00-07:00</lastmod>
-  </url><url>
-    <loc>https://sleepingbear-ai.github.io/tags/ai%E7%BC%96%E7%A8%8B/</loc>
-    <lastmod>2026-08-25T10:00:00-07:00</lastmod>
-  </url><url>
-    <loc>https://sleepingbear-ai.github.io/tags/codingagent/</loc>
-    <lastmod>2026-08-25T10:00:00-07:00</lastmod>
-  </url><url>
-    <loc>https://sleepingbear-ai.github.io/tags/llm/</loc>
     <lastmod>2026-08-25T10:00:00-07:00</lastmod>
   </url><url>
     <loc>https://sleepingbear-ai.github.io/posts/swe_agent/</loc>

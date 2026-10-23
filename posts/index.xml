@@ -6,8 +6,15 @@
     <description>Recent content in Posts on Welcome to the Blog of SleepingBear</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 08 Oct 2026 10:00:00 -0700</lastBuildDate>
+    <lastBuildDate>Wed, 21 Oct 2026 12:00:00 -0700</lastBuildDate>
     <atom:link href="https://sleepingbear-ai.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>理解 Coding Agent 架构：Agent = LLM &#43; Agent Harness</title>
+      <link>https://sleepingbear-ai.github.io/posts/coding_agent_architecture/</link>
+      <pubDate>Wed, 21 Oct 2026 12:00:00 -0700</pubDate>
+      <guid>https://sleepingbear-ai.github.io/posts/coding_agent_architecture/</guid>
+      <description>从约 1,000 行 Python 的 Mini Coding Agent 出发，理解 Agentic Loop、Tool Use、Context Window、Working Memory 和 SubAgent 如何协作，让 LLM 能够完成编程任务。</description>
+    </item>
     <item>
       <title>Anthropic：如何构建有效的 AI Agent</title>
       <link>https://sleepingbear-ai.github.io/posts/building-effective-agents/</link>
