@@ -131,6 +131,24 @@
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Multi-Agent Deep Research: 原理和代码
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>之前写过一篇 Anthropic Deep Research: Multi-Agent 架构，讲 Anthropic 是怎么用 Multi-Agent 做 Deep Research 的。我按照那套架构用139 行 Python 实现了一个能并行搜索、带引用的 Deep Research。
+原理：Orchestrator-Worker Anthropic 的核心思路是 Orchestrator-Worker（指挥者—工人）：
+Lead Agent（指挥者） —— 拆解问题，把一个大 query 切成几个互不重叠的子任务。 Subagents（工人） —— 每人领一个子任务，并行去搜索，各自有独立的 context window，完成任务后只把压缩过的 findings 返回给 Lead Agent。 Synthesis —— Lead Agent 把各路 findings 汇总成一篇连贯的报告。 Citation —— 最后统一给报告里的每个论断挂上来源链接。 为什么要多个 Agent？
+并行探索：多个 Subagent 同时进行，各自用独立的 context window，探索问题的不同侧面。 关注点分离（separation of concerns）：每个 Subagent 有自己独立的工具、prompt 和 Agentic Loop，这降低了路径依赖，让每条调查更深入、更独立。 突破单 context 上限：Deep Research 要处理的信息常常超出 Single-Agent 的 context window，多个 Agent 分摊是必要的。 Multi-Agent 有效，主要是因为它能 “花掉足够多的 token 来解决问题”。Anthropic 用 Claude Opus 4 为 Lead Agent、Claude Sonnet 4 为 Subagent 的系统，在内部研究评测上比 Single-Agent（用 Opus 4）效果高出 90.2%——代价是 token 消耗大得多，所以这套架构只适合高价值、可并行、超出单 context 的任务。
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-20 10:00:00 -0700 PDT'>July 20, 2026</span></footer>
+  <a class="entry-link" aria-label="post link to Multi-Agent Deep Research: 原理和代码" href="https://sleepingbear-ai.github.io/posts/multi-agent-deep-research/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">TIGER（生成式推荐的经典论文）: 解释和思考
     </h2>
   </header>

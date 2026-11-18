@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>塞涅卡 on Welcome to the Blog of SleepingBear</title>
+    <link>https://sleepingbear-ai.github.io/tags/%E5%A1%9E%E6%B6%85%E5%8D%A1/</link>
+    <description>Recent content in 塞涅卡 on Welcome to the Blog of SleepingBear</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 17 Nov 2026 10:00:00 -0800</lastBuildDate>
+    <atom:link href="https://sleepingbear-ai.github.io/tags/%E5%A1%9E%E6%B6%85%E5%8D%A1/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>《与塞涅卡共进早餐》读书笔记</title>
+      <link>https://sleepingbear-ai.github.io/posts/breakfast-with-seneca/</link>
+      <pubDate>Tue, 17 Nov 2026 10:00:00 -0800</pubDate>
+      <guid>https://sleepingbear-ai.github.io/posts/breakfast-with-seneca/</guid>
+      <description>整理塞涅卡关于时间、焦虑、愤怒、逆境与内在自由的人生智慧。</description>
+    </item>
+  </channel>
+</rss>
